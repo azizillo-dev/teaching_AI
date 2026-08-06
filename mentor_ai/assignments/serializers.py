@@ -1,6 +1,11 @@
 from rest_framework import serializers
 
-from mentor_ai.assignments.models import Assignment
+from mentor_ai.assignments.models import Assignment, Submission, SubmissionImage
+
+
+# ──────────────────────────────────────────────
+# Assignment Serializers
+# ──────────────────────────────────────────────
 
 
 class AssignmentReadSerializer(serializers.ModelSerializer):
@@ -33,3 +38,52 @@ class AssignmentUpdateSerializer(serializers.Serializer):
     description = serializers.CharField(required=False)
     deadline = serializers.DateTimeField(required=False)
     is_active = serializers.BooleanField(required=False)
+
+
+# ──────────────────────────────────────────────
+# Submission Serializers
+# ──────────────────────────────────────────────
+
+
+class SubmissionImageReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubmissionImage
+        fields = ("id", "image", "created_at")
+
+
+class SubmissionReadSerializer(serializers.ModelSerializer):
+    images = SubmissionImageReadSerializer(many=True, read_only=True)
+    assignment_title = serializers.CharField(
+        source="assignment.title", read_only=True,
+    )
+    group_name = serializers.CharField(
+        source="assignment.group.name", read_only=True,
+    )
+    student_email = serializers.CharField(
+        source="student.email", read_only=True,
+    )
+
+    class Meta:
+        model = Submission
+        fields = (
+            "id",
+            "assignment",
+            "assignment_title",
+            "group_name",
+            "student_email",
+            "status",
+            "images",
+            "created_at",
+            "updated_at",
+        )
+
+
+class SubmissionCreateSerializer(serializers.Serializer):
+    assignment = serializers.UUIDField()
+
+
+class SubmissionUploadSerializer(serializers.Serializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        min_length=1,
+    )

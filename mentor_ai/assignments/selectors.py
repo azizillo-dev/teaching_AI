@@ -1,8 +1,13 @@
 from django.db.models import QuerySet
 
-from mentor_ai.assignments.models import Assignment
+from mentor_ai.assignments.models import Assignment, Submission
 from mentor_ai.classrooms.models import GroupMembership
 from mentor_ai.users.models import User
+
+
+# ──────────────────────────────────────────────
+# Assignment Selectors
+# ──────────────────────────────────────────────
 
 
 def assignment_list_for_teacher(*, teacher: User) -> QuerySet[Assignment]:
@@ -44,4 +49,45 @@ def assignment_get_for_student(*, pk, student: User) -> Assignment:
         Assignment.objects
         .select_related("group")
         .get(pk=pk, group_id__in=group_ids, is_active=True)
+    )
+
+
+# ──────────────────────────────────────────────
+# Submission Selectors
+# ──────────────────────────────────────────────
+
+
+def submission_list_for_teacher(*, teacher: User) -> QuerySet[Submission]:
+    return (
+        Submission.objects
+        .filter(assignment__created_by=teacher)
+        .select_related("assignment", "assignment__group", "student")
+        .prefetch_related("images")
+    )
+
+
+def submission_get_for_teacher(*, pk, teacher: User) -> Submission:
+    return (
+        Submission.objects
+        .select_related("assignment", "assignment__group", "student")
+        .prefetch_related("images")
+        .get(pk=pk, assignment__created_by=teacher)
+    )
+
+
+def submission_get_for_student(*, pk, student: User) -> Submission:
+    return (
+        Submission.objects
+        .select_related("assignment", "assignment__group")
+        .prefetch_related("images")
+        .get(pk=pk, student=student)
+    )
+
+
+def submission_list_for_student(*, student: User) -> QuerySet[Submission]:
+    return (
+        Submission.objects
+        .filter(student=student)
+        .select_related("assignment", "assignment__group")
+        .prefetch_related("images")
     )
