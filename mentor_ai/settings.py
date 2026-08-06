@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     # Local
     "mentor_ai.core.apps.CoreConfig",
     "mentor_ai.users.apps.UsersConfig",
+    "mentor_ai.classrooms.apps.ClassroomsConfig",
 ]
 
 MIDDLEWARE = [
