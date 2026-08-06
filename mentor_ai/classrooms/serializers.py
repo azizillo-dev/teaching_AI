@@ -9,12 +9,19 @@ from mentor_ai.classrooms.models import Group, StudentProfile
 
 
 class GroupOutputSerializer(serializers.ModelSerializer):
+    student_count = serializers.IntegerField(read_only=True, default=0)
+    assignment_count = serializers.IntegerField(read_only=True, default=0)
+    average_score = serializers.FloatField(read_only=True, default=0.0)
+
     class Meta:
         model = Group
         fields = (
             "id",
             "name",
             "description",
+            "student_count",
+            "assignment_count",
+            "average_score",
             "created_at",
             "updated_at",
         )

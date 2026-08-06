@@ -1,10 +1,23 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
-export function ErrorState({ message = "Xatolik yuz berdi." }: { message?: string }) {
+interface ErrorStateProps {
+  message?: string;
+  onRetry?: () => void;
+}
+
+export function ErrorState({ message = "Something went wrong.", onRetry }: ErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-destructive">
-      <AlertTriangle className="w-10 h-10 mb-3" />
-      <p className="font-medium">{message}</p>
+    <div className="flex flex-col items-center justify-center py-16 text-center border rounded-xl bg-destructive/10 border-destructive/20">
+      <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+      <p className="text-destructive font-medium mb-4">{message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="px-4 py-2 bg-background border rounded-md font-medium hover:bg-muted"
+        >
+          Try Again
+        </button>
+      )}
     </div>
   );
 }
