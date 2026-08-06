@@ -36,6 +36,9 @@ class Submission(BaseModel):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
         SUBMITTED = "submitted", "Submitted"
+        CHECKING = "checking", "Checking"
+        CHECKED = "checked", "Checked"
+        FAILED = "failed", "Failed"
 
     assignment = models.ForeignKey(
         Assignment,

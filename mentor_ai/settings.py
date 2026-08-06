@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "mentor_ai.users.apps.UsersConfig",
     "mentor_ai.classrooms.apps.ClassroomsConfig",
     "mentor_ai.assignments.apps.AssignmentsConfig",
+    "mentor_ai.grading.apps.GradingConfig",
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,18 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+
+# Celery Configuration
+
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+
+# Gemini AI Configuration
+
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+GEMINI_MODEL_NAME = config("GEMINI_MODEL_NAME", default="gemini-3-flash")

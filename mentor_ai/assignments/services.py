@@ -125,6 +125,8 @@ def submission_create(*, assignment: Assignment, student: User) -> Submission:
 
 @transaction.atomic
 def submission_upload_images(*, submission: Submission, images: list) -> list[SubmissionImage]:
+    from mentor_ai.grading.tasks import grade_submission_task
+
     created_images = []
 
     for image_file in images:
@@ -139,6 +141,9 @@ def submission_upload_images(*, submission: Submission, images: list) -> list[Su
         created_images.append(submission_image)
 
     submission.status = Submission.Status.SUBMITTED
-    submission.save()
+    submission.save(update_fields=["status"])
+
+    # Trigger Celery task for AI grading
+    grade_submission_task.delay(submission.id)
 
     return created_images
