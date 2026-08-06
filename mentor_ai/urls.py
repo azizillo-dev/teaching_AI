@@ -31,6 +31,10 @@ urlpatterns = [
         "api/v1/grading/",
         include("mentor_ai.grading.urls"),
     ),
+    path(
+        "api/v1/dashboard/",
+        include("mentor_ai.dashboard.urls"),
+    ),
 ]
 
 if settings.DEBUG:
