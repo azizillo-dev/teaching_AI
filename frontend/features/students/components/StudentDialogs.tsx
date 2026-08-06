@@ -15,7 +15,7 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-function Modal({ isOpen, onClose, title, children }: ModalProps) {
+function Modal({ isOpen, title, children }: ModalProps) {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "auto";
@@ -34,7 +34,7 @@ function Modal({ isOpen, onClose, title, children }: ModalProps) {
   );
 }
 
-export function AddStudentDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function CreateStudentDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { data: groups } = useGroups();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<StudentCreateFormData>({
     resolver: zodResolver(studentCreateSchema),
@@ -67,7 +67,7 @@ export function AddStudentDialog({ isOpen, onClose }: { isOpen: boolean; onClose
 
   if (successData) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Student Created Successfully">
+      <Modal isOpen={isOpen} onClose={onClose} title="Student Created!">
         <div className="space-y-6">
           <div className="bg-primary/5 text-primary p-4 rounded-lg flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-primary" />

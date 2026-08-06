@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Users, Search, MoreHorizontal, CheckCircle2, XCircle } from "lucide-react";
 import { useStudents } from "@/features/students/hooks";
 import { useGroups } from "@/features/groups/hooks";
-import { AddStudentDialog, EditStudentDialog, DeactivateStudentDialog } from "@/features/students/components/StudentDialogs";
+import { CreateStudentDialog, EditStudentDialog, DeactivateStudentDialog } from "@/features/students/components/StudentDialogs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Student } from "@/features/students/schema";
@@ -15,7 +15,7 @@ export default function StudentsPage() {
   const { data: students, isLoading, isError, refetch } = useStudents();
   const { data: groups } = useGroups();
   
-  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [deactivateStudent, setDeactivateStudent] = useState<Student | null>(null);
 
@@ -67,7 +67,7 @@ export default function StudentsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Students</h1>
           <p className="text-muted-foreground mt-1">Manage your students</p>
         </div>
-        <Button onClick={() => setIsAddOpen(true)} className="hidden md:flex">
+        <Button onClick={() => setIsCreateOpen(true)} className="hidden md:flex">
           <Plus className="w-4 h-4 mr-2" />
           Add Student
         </Button>
@@ -79,7 +79,7 @@ export default function StudentsPage() {
           title="No students yet"
           description="Add your first student to start tracking their progress."
           actionLabel="Add Student"
-          onAction={() => setIsAddOpen(true)}
+          onAction={() => setIsCreateOpen(true)}
         />
       ) : (
         <div className="space-y-6">
@@ -242,14 +242,14 @@ export default function StudentsPage() {
 
       {/* Floating Action Button for Mobile */}
       <button
-        onClick={() => setIsAddOpen(true)}
+        onClick={() => setIsCreateOpen(true)}
         className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-transform z-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
         aria-label="Add Student"
       >
         <Plus className="w-6 h-6" />
       </button>
 
-      <AddStudentDialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+      <CreateStudentDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
       <EditStudentDialog isOpen={!!editStudent} onClose={() => setEditStudent(null)} student={editStudent} />
       <DeactivateStudentDialog isOpen={!!deactivateStudent} onClose={() => setDeactivateStudent(null)} student={deactivateStudent} />
     </div>

@@ -37,7 +37,8 @@ api.interceptors.response.use(
       } catch {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
-        if (typeof window !== "undefined") window.location.assign("/login");
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        if (typeof window !== "undefined") window.location.href = "/login";
       }
     }
     return Promise.reject(error);

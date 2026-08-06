@@ -6,7 +6,6 @@ import { groupSchema, type GroupFormData, type Group } from "@/features/groups/s
 import { useCreateGroup, useUpdateGroup, useDeleteGroup } from "@/features/groups/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/utils/cn";
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,7 +14,7 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-function Modal({ isOpen, onClose, title, children }: ModalProps) {
+function Modal({ isOpen, title, children }: ModalProps) {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "auto";
@@ -49,7 +48,7 @@ export function CreateGroupDialog({ isOpen, onClose }: { isOpen: boolean; onClos
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create New Group">
+    <Modal isOpen={isOpen} onClose={onClose} title="Create Group">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Group Name</label>

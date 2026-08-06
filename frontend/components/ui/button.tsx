@@ -34,14 +34,10 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-}
+    VariantProps<typeof buttonVariants> {}
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    // If asChild is true, we should theoretically use Slot. 
-    // Since we removed radix dependency, we'll just ignore asChild or warn.
+  ({ className, variant, size, ...props }, ref) => {
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
