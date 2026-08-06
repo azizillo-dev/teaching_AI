@@ -20,10 +20,18 @@ def group_get(*, pk, owner: User) -> Group:
 
 
 def student_list(*, teacher: User) -> QuerySet[StudentProfile]:
+    from django.db.models import F, Avg
+    from django.db.models.functions import Coalesce
+    from mentor_ai.assignments.models import Submission
+
     return (
         StudentProfile.objects
         .filter(created_by=teacher)
         .select_related("user")
+        .annotate(
+            group_name=F("memberships__group__name"),
+            average_score=Coalesce(Avg("user__submissions__check_result__score"), 0.0),
+        )
     )
 
 

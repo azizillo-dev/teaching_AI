@@ -60,7 +60,9 @@ def group_delete(*, group: Group) -> None:
 
 
 @transaction.atomic
-def student_create(*, teacher: User, first_name: str, last_name: str) -> dict:
+def student_create(
+    *, teacher: User, first_name: str, last_name: str, group_id: str | None = None
+) -> dict:
     email = _generate_student_email(first_name, last_name)
     raw_password = _generate_password()
 
@@ -72,10 +74,19 @@ def student_create(*, teacher: User, first_name: str, last_name: str) -> dict:
         role=User.Role.STUDENT,
     )
 
-    StudentProfile.objects.create(
+    student_profile = StudentProfile.objects.create(
         user=user,
         created_by=teacher,
     )
+
+    if group_id:
+        from mentor_ai.classrooms.models import Group, GroupMembership
+        group = Group.objects.filter(id=group_id, owner=teacher).first()
+        if group:
+            GroupMembership.objects.create(
+                group=group,
+                student_profile=student_profile,
+            )
 
     return {
         "user": user,

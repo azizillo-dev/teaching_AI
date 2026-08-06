@@ -50,11 +50,14 @@ class StudentOutputSerializer(serializers.Serializer):
     last_name = serializers.CharField(source="user.last_name")
     is_active = serializers.BooleanField()
     created_at = serializers.DateTimeField()
+    group_name = serializers.CharField(required=False, allow_null=True)
+    average_score = serializers.FloatField(required=False, default=0.0)
 
 
 class StudentCreateSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
+    group_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class StudentCreateOutputSerializer(serializers.Serializer):
