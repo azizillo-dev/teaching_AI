@@ -15,6 +15,9 @@ export const useCreateGroup = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
+    onError: (error: any) => {
+      alert(error?.response?.data?.non_field_errors?.[0] || error?.response?.data?.detail || "Guruh yaratishda xatolik yuz berdi");
+    },
   });
 };
 

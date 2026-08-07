@@ -3,6 +3,7 @@ import string
 import secrets
 
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
 from mentor_ai.classrooms.models import Group, StudentProfile
 from mentor_ai.users.models import User
@@ -34,6 +35,11 @@ def _generate_password(length: int = 10) -> str:
 
 
 def group_create(*, owner: User, name: str, description: str = "") -> Group:
+    if owner.role == User.Role.TEACHER:
+        # Hozircha hamma tekin tarifda bo'lgani uchun, 3 ta guruhdan ko'p ochish mumkin emas
+        if owner.owned_groups.count() >= 3:
+            raise ValidationError("Free tarifida eng ko'pi bilan 3 ta guruh yaratish mumkin. Iltimos, limitni oshirish uchun obunani xarid qiling.")
+            
     group = Group(owner=owner, name=name, description=description)
     group.full_clean()
     group.save()
