@@ -7,10 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { 
   forgotPasswordSchema, 
-  resetPasswordSchema,
   type ForgotPasswordFormData,
   type ResetPasswordFormData
 } from "@/features/auth/schema";
+import { z } from "zod";
 import { useForgotPasswordMutation, useResetPasswordMutation } from "@/features/auth/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,12 +32,17 @@ export default function ForgotPasswordPage() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
+  const resetCodeSchema = z.object({
+    code: z.string().length(6, { message: "Kod 6 xonali bo'lishi kerak." }),
+    new_password: z.string().min(6, { message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak." }),
+  });
+
   const {
     register: resetForm,
     handleSubmit: handleResetSubmit,
     formState: { errors: resetErrors },
-  } = useForm<ResetPasswordFormData>({
-    resolver: zodResolver(resetPasswordSchema),
+  } = useForm<{ code: string; new_password: string }>({
+    resolver: zodResolver(resetCodeSchema),
   });
 
   const onForgot = (data: ForgotPasswordFormData) => {
@@ -49,7 +54,7 @@ export default function ForgotPasswordPage() {
     });
   };
 
-  const onReset = (data: ResetPasswordFormData) => {
+  const onReset = (data: { code: string; new_password: string }) => {
     resetMutation.mutate({ ...data, email: registeredEmail }, {
       onSuccess: () => {
         router.push("/login");

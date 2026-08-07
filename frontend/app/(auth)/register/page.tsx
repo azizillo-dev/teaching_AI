@@ -7,10 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { 
   registerSchema, 
-  verifyEmailSchema,
   type RegisterFormData,
   type VerifyEmailFormData
 } from "@/features/auth/schema";
+import { z } from "zod";
 import { useRegisterMutation, useVerifyEmailMutation } from "@/features/auth/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,12 +32,16 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
+  const verifyCodeSchema = z.object({
+    code: z.string().length(6, { message: "Kod 6 xonali bo'lishi kerak." }),
+  });
+
   const {
     register: verifyForm,
     handleSubmit: handleVerifySubmit,
     formState: { errors: verifyErrors },
-  } = useForm<VerifyEmailFormData>({
-    resolver: zodResolver(verifyEmailSchema),
+  } = useForm<{ code: string }>({
+    resolver: zodResolver(verifyCodeSchema),
   });
 
   const onRegister = (data: RegisterFormData) => {
@@ -49,8 +53,8 @@ export default function RegisterPage() {
     });
   };
 
-  const onVerify = (data: VerifyEmailFormData) => {
-    verifyMutation.mutate({ ...data, email: registeredEmail }, {
+  const onVerify = (data: { code: string }) => {
+    verifyMutation.mutate({ code: data.code, email: registeredEmail }, {
       onSuccess: () => {
         router.push("/pricing");
       }
