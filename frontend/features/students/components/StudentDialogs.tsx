@@ -69,18 +69,24 @@ export function CreateStudentDialog({ isOpen, onClose }: { isOpen: boolean; onCl
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Student Created!">
         <div className="space-y-6">
-          <div className="bg-primary/5 text-primary p-4 rounded-lg flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-primary" />
-            <div>
-              <p className="font-semibold mb-2">Please copy these credentials now!</p>
-              <div className="space-y-1 font-mono text-sm bg-background p-3 rounded border">
-                <p><strong>Username:</strong> {successData.email}</p>
-                <p><strong>Password:</strong> {successData.password}</p>
+          <div className="bg-primary/5 text-primary p-4 rounded-lg flex flex-col sm:flex-row items-start gap-3">
+            <CheckCircle2 className="w-6 h-6 shrink-0 text-primary mt-1" />
+            <div className="w-full">
+              <p className="font-semibold mb-3">Please copy these credentials now!</p>
+              <div className="space-y-3 font-mono text-sm bg-background p-3 rounded border w-full overflow-hidden">
+                <div>
+                  <strong className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">Username (Email)</strong>
+                  <div className="break-all text-foreground font-medium">{successData.email}</div>
+                </div>
+                <div>
+                  <strong className="text-muted-foreground text-[10px] uppercase tracking-wider block mb-0.5">Password</strong>
+                  <div className="text-foreground font-medium">{successData.password}</div>
+                </div>
               </div>
             </div>
           </div>
           <div className="pt-4 flex items-center justify-end gap-3 border-t">
-            <Button type="button" variant="outline" onClick={copyCredentials}>
+            <Button type="button" variant="outline" onClick={copyCredentials} className="w-full sm:w-auto">
               <Copy className="w-4 h-4 mr-2" /> Copy Credentials
             </Button>
             <Button type="button" onClick={onClose}>Done</Button>
