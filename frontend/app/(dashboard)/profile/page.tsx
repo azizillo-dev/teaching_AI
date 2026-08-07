@@ -120,7 +120,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-8 pb-24 md:pb-8">
+    <div className="max-w-4xl mx-auto p-4 md:p-8 pb-24 md:pb-8">
       <div className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-foreground">Profil Sozlamalari</h1>
         <p className="text-sm text-muted-foreground mt-1">Shaxsiy ma'lumotlaringizni boshqaring</p>
@@ -163,101 +163,125 @@ export default function ProfilePage() {
         </div>
 
         {/* Form Fields */}
-        <div className="px-6 md:px-8 space-y-8">
+        <div className="px-0 sm:px-8 space-y-0">
           
           {/* Asosiy ma'lumotlar */}
-          <div>
-            <div className="flex items-center gap-4 mb-5">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0">Asosiy ma'lumotlar</h3>
-              <div className="h-px bg-border flex-1"></div>
+          <div className="mb-8">
+            <div className="px-5 sm:px-0 mb-4">
+              <h3 className="text-sm font-semibold text-foreground tracking-tight">Asosiy ma'lumotlar</h3>
+              <p className="text-xs text-muted-foreground mt-1">Platformada ishlatiladigan asosiy profilingiz</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Ism</label>
-                {isEditing ? (
-                  <input 
-                    type="text" 
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                    value={formData.first_name}
-                    onChange={e => setFormData({...formData, first_name: e.target.value})}
-                  />
-                ) : (
-                  <p className="font-medium text-foreground">{profile.first_name}</p>
-                )}
+            <div className="flex flex-col border-y sm:border sm:rounded-xl divide-y bg-card overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:p-5 hover:bg-muted/30 transition-colors">
+                <div className="w-full sm:w-1/3 mb-1 sm:mb-0">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Ism</span>
+                </div>
+                <div className="w-full sm:w-2/3">
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                      value={formData.first_name}
+                      onChange={e => setFormData({...formData, first_name: e.target.value})}
+                    />
+                  ) : (
+                    <p className="text-sm text-foreground font-medium">{profile.first_name}</p>
+                  )}
+                </div>
               </div>
               
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Familiya</label>
-                {isEditing ? (
-                  <input 
-                    type="text" 
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                    value={formData.last_name}
-                    onChange={e => setFormData({...formData, last_name: e.target.value})}
-                  />
-                ) : (
-                  <p className="font-medium text-foreground">{profile.last_name}</p>
-                )}
+              <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:p-5 hover:bg-muted/30 transition-colors">
+                <div className="w-full sm:w-1/3 mb-1 sm:mb-0">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Familiya</span>
+                </div>
+                <div className="w-full sm:w-2/3">
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                      value={formData.last_name}
+                      onChange={e => setFormData({...formData, last_name: e.target.value})}
+                    />
+                  ) : (
+                    <p className="text-sm text-foreground font-medium">{profile.last_name}</p>
+                  )}
+                </div>
               </div>
 
-              <div className="md:col-span-2 min-w-0">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Email</label>
-                <p className="font-medium text-foreground break-all">{profile.email}</p>
+              <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:p-5 hover:bg-muted/30 transition-colors">
+                <div className="w-full sm:w-1/3 mb-1 sm:mb-0">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</span>
+                </div>
+                <div className="w-full sm:w-2/3 min-w-0">
+                  <p className="text-sm text-foreground font-medium truncate">{profile.email}</p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Qo'shimcha ma'lumotlar */}
           <div>
-            <div className="flex items-center gap-4 mb-5">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0">Qo'shimcha ma'lumotlar</h3>
-              <div className="h-px bg-border flex-1"></div>
+            <div className="px-5 sm:px-0 mb-4">
+              <h3 className="text-sm font-semibold text-foreground tracking-tight">Qo'shimcha ma'lumotlar</h3>
+              <p className="text-xs text-muted-foreground mt-1">O'quvchilar ko'rishi mumkin bo'lgan qo'shimcha ma'lumotlar</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Fan</label>
-                {isEditing ? (
-                  <input 
-                    type="text" 
-                    placeholder="Masalan: Matematika"
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                    value={formData.subject}
-                    onChange={e => setFormData({...formData, subject: e.target.value})}
-                  />
-                ) : (
-                  <p className="font-medium text-foreground">{profile.subject || <span className="text-muted-foreground italic">Kiritilmagan</span>}</p>
-                )}
+            <div className="flex flex-col border-y sm:border sm:rounded-xl divide-y bg-card overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:p-5 hover:bg-muted/30 transition-colors">
+                <div className="w-full sm:w-1/3 mb-1 sm:mb-0">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Fan</span>
+                </div>
+                <div className="w-full sm:w-2/3">
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      placeholder="Masalan: Matematika"
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                      value={formData.subject}
+                      onChange={e => setFormData({...formData, subject: e.target.value})}
+                    />
+                  ) : (
+                    <p className="text-sm text-foreground font-medium">{profile.subject || <span className="text-muted-foreground italic font-normal">Kiritilmagan</span>}</p>
+                  )}
+                </div>
               </div>
               
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Telefon raqam</label>
-                {isEditing ? (
-                  <input 
-                    type="text" 
-                    placeholder="+998 90 123 45 67"
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                    value={formData.phone_number}
-                    onChange={e => setFormData({...formData, phone_number: e.target.value})}
-                  />
-                ) : (
-                  <p className="font-medium text-foreground">{profile.phone_number || <span className="text-muted-foreground italic">Kiritilmagan</span>}</p>
-                )}
+              <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:p-5 hover:bg-muted/30 transition-colors">
+                <div className="w-full sm:w-1/3 mb-1 sm:mb-0">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Telefon raqam</span>
+                </div>
+                <div className="w-full sm:w-2/3">
+                  {isEditing ? (
+                    <input 
+                      type="text" 
+                      placeholder="+998 90 123 45 67"
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                      value={formData.phone_number}
+                      onChange={e => setFormData({...formData, phone_number: e.target.value})}
+                    />
+                  ) : (
+                    <p className="text-sm text-foreground font-medium">{profile.phone_number || <span className="text-muted-foreground italic font-normal">Kiritilmagan</span>}</p>
+                  )}
+                </div>
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">O'zi haqida (Bio)</label>
-                {isEditing ? (
-                  <textarea 
-                    placeholder="O'zingiz haqingizda qisqacha ma'lumot..."
-                    className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary resize-y"
-                    value={formData.bio}
-                    onChange={e => setFormData({...formData, bio: e.target.value})}
-                  />
-                ) : (
-                  <p className="text-sm text-foreground whitespace-pre-line">{profile.bio || <span className="text-muted-foreground italic">Kiritilmagan</span>}</p>
-                )}
+              <div className="flex flex-col sm:flex-row p-4 sm:p-5 hover:bg-muted/30 transition-colors">
+                <div className="w-full sm:w-1/3 mb-2 sm:mb-0 sm:pt-2">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">O'zi haqida (Bio)</span>
+                </div>
+                <div className="w-full sm:w-2/3">
+                  {isEditing ? (
+                    <textarea 
+                      placeholder="O'zingiz haqingizda qisqacha ma'lumot..."
+                      className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary resize-y"
+                      value={formData.bio}
+                      onChange={e => setFormData({...formData, bio: e.target.value})}
+                    />
+                  ) : (
+                    <p className="text-sm text-foreground whitespace-pre-line leading-relaxed">{profile.bio || <span className="text-muted-foreground italic font-normal">Kiritilmagan</span>}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
