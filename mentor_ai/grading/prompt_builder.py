@@ -6,12 +6,16 @@ def build_grading_prompt(assignment: Assignment) -> str:
     Creates a prompt for Gemini AI.
     It passes the assignment details and explains the expected output schema.
     """
-    return f"""Siz o'quvchining uy vazifasini baholaydigan professional ustozsiz.
+    prompt = f"""Siz o'quvchining uy vazifasini baholaydigan professional ustozsiz.
 
 Vazifa:
 Mavzu: {assignment.title}
 Tavsif: {assignment.description}
+"""
+    if assignment.book and assignment.extraction_status == 'done' and assignment.extracted_content:
+        prompt += f"\nQuyidagi masalalar ro'yxatidan o'quvchi ishlagan:\n{assignment.extracted_content}\n"
 
+    prompt += """
 Sizga o'quvchi tomonidan yuborilgan uy vazifasi rasmlari beriladi.
 Rasmlarni diqqat bilan tahlil qiling va vazifa shartlariga qanchalik to'g'ri kelishiga qarab 0 dan 100 gacha bo'lgan oraliqda baholang.
 
@@ -30,4 +34,5 @@ MUHIM QOIDA: Barcha matnlar, xulosalar va tushuntirishlar 100% O'zbek tilida yoz
 
 Faqatgina so'ralgan JSON formatida javob bering.
 """
+    return prompt
 

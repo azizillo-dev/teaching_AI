@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "mentor_ai.assignments.apps.AssignmentsConfig",
     "mentor_ai.grading.apps.GradingConfig",
     "mentor_ai.dashboard.apps.DashboardConfig",
+    "mentor_ai.library.apps.LibraryConfig",
 ]
 
 MIDDLEWARE = [

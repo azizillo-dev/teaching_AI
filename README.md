@@ -46,13 +46,17 @@ Ensure your PostgreSQL and Redis servers are running in the background.
 If you are on Windows, you can use [Memurai](https://www.memurai.com/) or run Redis via WSL/Docker.
 
 ### 2. Backend API Server
-```bash
-# In the root directory, activate venv
-cd mentor_ai
-python manage.py makemigrations
-python manage.py migrate
-python manage.py runserver
-```
+3. **Run the backend server:**
+   ```bash
+   .\venv\Scripts\python manage.py runserver
+   ```
+
+4. **Run Celery worker (Required for Background tasks & AI extraction):**
+   ```bash
+   # Make sure Redis is running locally on port 6379, then run:
+   .\venv\Scripts\celery -A mentor_ai worker -l info --pool=solo
+   ```
+   *(Note: `--pool=solo` is recommended for Windows environments)*
 The backend will start at: `http://127.0.0.1:8000/`
 
 ### 3. Celery Worker (AI Evaluation)

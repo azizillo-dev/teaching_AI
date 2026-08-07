@@ -25,22 +25,11 @@ urlpatterns = [
         "api/v1/users/",
         include("mentor_ai.users.urls"),
     ),
-    path(
-        "api/v1/classrooms/",
-        include("mentor_ai.classrooms.urls"),
-    ),
-    path(
-        "api/v1/assignments/",
-        include("mentor_ai.assignments.urls"),
-    ),
-    path(
-        "api/v1/grading/",
-        include("mentor_ai.grading.urls"),
-    ),
-    path(
-        "api/v1/dashboard/",
-        include("mentor_ai.dashboard.urls"),
-    ),
+    path("api/v1/classrooms/", include("mentor_ai.classrooms.urls")),
+    path("api/v1/assignments/", include("mentor_ai.assignments.urls")),
+    path("api/v1/grading/", include("mentor_ai.grading.urls")),
+    path("api/v1/dashboard/", include("mentor_ai.dashboard.urls")),
+    path("api/v1/library/", include("mentor_ai.library.urls")),
 ]
 
 if settings.DEBUG:

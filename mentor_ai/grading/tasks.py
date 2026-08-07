@@ -25,6 +25,18 @@ def grade_submission_task(self, submission_id):
         logger.warning(f"Submission {submission_id} has no images to grade.")
         return
 
+    # Wait for extraction if necessary
+    if submission.assignment.book and submission.assignment.extraction_status != 'done':
+        if submission.assignment.extraction_status == 'pending':
+            logger.warning(f"Submission {submission_id} waiting for extraction. Retrying in 30s.")
+            try:
+                self.retry(countdown=30)
+            except self.MaxRetriesExceededError:
+                submission.status = Submission.Status.FAILED
+                submission.save(update_fields=["status"])
+                return
+        # If failed, we just proceed without extracted context as fallback
+
     # Update status to checking
     submission.status = Submission.Status.CHECKING
     submission.save(update_fields=["status"])
