@@ -46,7 +46,7 @@ export default function LoginPage() {
             <p className="text-muted-foreground mt-2">Davom etish uchun ma'lumotlaringizni kiriting</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" suppressHydrationWarning>
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none">Email</label>
               <Input

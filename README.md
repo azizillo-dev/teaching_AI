@@ -88,5 +88,4 @@ The frontend will start at: `http://localhost:3000/`
 - **Database connection failed**: Check your `.env` file for the correct `DB_USER` and `DB_PASSWORD`.
 - **API calls failing**: Ensure the backend is running on `http://127.0.0.1:8000` and `FRONTEND_URL` in `.env` is correctly pointing to `http://localhost:3000`.
 
-
-
+<!-- Azizullo nima gap -->
