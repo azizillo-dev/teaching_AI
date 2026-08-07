@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
+from mentor_ai.classrooms.models import Group, StudentProfile
 from mentor_ai.classrooms.permissions import IsTeacher
 from mentor_ai.classrooms.selectors import (
     group_get,
@@ -24,6 +25,7 @@ from mentor_ai.classrooms.services import (
     group_update,
     student_create,
     student_update,
+    student_delete,
 )
 
 
@@ -56,7 +58,7 @@ class GroupViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         try:
             group = group_get(pk=pk, owner=request.user)
-        except Exception:
+        except (Group.DoesNotExist, ValueError):
             return Response(
                 {"detail": "Guruh topilmadi."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -68,7 +70,7 @@ class GroupViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         try:
             group = group_get(pk=pk, owner=request.user)
-        except Exception:
+        except (Group.DoesNotExist, ValueError):
             return Response(
                 {"detail": "Guruh topilmadi."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -94,7 +96,7 @@ class GroupViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         try:
             group = group_get(pk=pk, owner=request.user)
-        except Exception:
+        except (Group.DoesNotExist, ValueError):
             return Response(
                 {"detail": "Guruh topilmadi."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -127,7 +129,7 @@ class StudentViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         try:
             student_profile = student_get(pk=pk, teacher=request.user)
-        except Exception:
+        except (StudentProfile.DoesNotExist, ValueError):
             return Response(
                 {"detail": "Talaba topilmadi."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -139,7 +141,7 @@ class StudentViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         try:
             student_profile = student_get(pk=pk, teacher=request.user)
-        except Exception:
+        except (StudentProfile.DoesNotExist, ValueError):
             return Response(
                 {"detail": "Talaba topilmadi."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -161,3 +163,15 @@ class StudentViewSet(viewsets.ViewSet):
 
         output_serializer = StudentOutputSerializer(student_profile)
         return Response(output_serializer.data)
+
+    def destroy(self, request, pk=None):
+        try:
+            student_profile = student_get(pk=pk, teacher=request.user)
+        except (StudentProfile.DoesNotExist, ValueError):
+            return Response(
+                {"detail": "Talaba topilmadi."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        student_delete(student_profile=student_profile)
+        return Response(status=status.HTTP_204_NO_CONTENT)

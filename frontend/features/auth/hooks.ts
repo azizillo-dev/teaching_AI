@@ -12,3 +12,32 @@ export const useLoginMutation = () => {
     },
   });
 };
+
+export const useRegisterMutation = () => {
+  return useMutation({
+    mutationFn: AuthService.register,
+  });
+};
+
+export const useVerifyEmailMutation = () => {
+  const { login } = useAuth();
+
+  return useMutation({
+    mutationFn: AuthService.verifyEmail,
+    onSuccess: (data) => {
+      login(data.access, data.refresh);
+    },
+  });
+};
+
+export const useForgotPasswordMutation = () => {
+  return useMutation({
+    mutationFn: AuthService.forgotPassword,
+  });
+};
+
+export const useResetPasswordMutation = () => {
+  return useMutation({
+    mutationFn: AuthService.resetPassword,
+  });
+};

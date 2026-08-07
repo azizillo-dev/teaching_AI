@@ -24,9 +24,9 @@ function Modal({ isOpen, title, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-lg bg-background md:rounded-xl rounded-t-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95">
-        <h2 className="text-xl font-bold mb-6">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 duration-200 p-4">
+      <div className="w-full max-w-md bg-background border rounded-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
+        <h2 className="text-lg font-bold tracking-tight mb-5">{title}</h2>
         {children}
       </div>
     </div>

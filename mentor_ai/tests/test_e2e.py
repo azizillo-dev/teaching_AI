@@ -4,7 +4,7 @@ from mentor_ai.assignments.models import Submission
 from mentor_ai.grading.models import CheckResult
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_complete_end_to_end_flow(
     api_client,
     teacher_user,
@@ -87,6 +87,7 @@ def test_complete_end_to_end_flow(
     submission = Submission.objects.get(id=submission_id)
     assert submission.status == Submission.Status.SUBMITTED
     mock_celery_task.assert_called_once_with(submission.id)
+
 
     # 7. Mock AI Evaluation Execution
     # We simulate Celery picking up the task

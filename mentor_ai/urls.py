@@ -7,17 +7,23 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from mentor_ai.users.serializers import CustomTokenObtainPairSerializer
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(
         "api/v1/auth/token/",
-        TokenObtainPairView.as_view(),
+        TokenObtainPairView.as_view(serializer_class=CustomTokenObtainPairSerializer),
         name="token_obtain_pair",
     ),
     path(
         "api/v1/auth/token/refresh/",
         TokenRefreshView.as_view(),
         name="token_refresh",
+    ),
+    path(
+        "api/v1/users/",
+        include("mentor_ai.users.urls"),
     ),
     path(
         "api/v1/classrooms/",

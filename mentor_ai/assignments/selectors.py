@@ -11,18 +11,33 @@ from mentor_ai.users.models import User
 
 
 def assignment_list_for_teacher(*, teacher: User) -> QuerySet[Assignment]:
+    from django.db.models import Count, Avg, Q
+    from django.db.models.functions import Coalesce
+
     return (
-        Assignment.objects
-        .filter(created_by=teacher)
+        Assignment.objects.filter(created_by=teacher)
         .select_related("group")
+        .annotate(
+            total_students=Count("group__memberships", distinct=True),
+            submitted_count=Count("submissions", filter=~Q(submissions__status="pending"), distinct=True),
+            average_score=Coalesce(Avg("submissions__check_result__score", filter=~Q(submissions__status="pending")), 0.0),
+        )
     )
 
 
 def assignment_get_for_teacher(*, pk, teacher: User) -> Assignment:
+    from django.db.models import Count, Avg, Q
+    from django.db.models.functions import Coalesce
+
     return (
-        Assignment.objects
+        Assignment.objects.filter(pk=pk, created_by=teacher)
         .select_related("group")
-        .get(pk=pk, created_by=teacher)
+        .annotate(
+            total_students=Count("group__memberships", distinct=True),
+            submitted_count=Count("submissions", filter=~Q(submissions__status="pending"), distinct=True),
+            average_score=Coalesce(Avg("submissions__check_result__score", filter=~Q(submissions__status="pending")), 0.0),
+        )
+        .get()
     )
 
 

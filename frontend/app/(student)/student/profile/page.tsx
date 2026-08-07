@@ -17,7 +17,7 @@ export default function StudentProfilePage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Username</p>
-            <p className="font-medium font-mono">{user?.email}</p>
+            <p className="font-medium font-mono break-all">{user?.email}</p>
           </div>
         </div>
       </div>

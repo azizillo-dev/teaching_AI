@@ -143,7 +143,7 @@ def submission_upload_images(*, submission: Submission, images: list) -> list[Su
     submission.status = Submission.Status.SUBMITTED
     submission.save(update_fields=["status"])
 
-    # Trigger Celery task for AI grading
-    grade_submission_task.delay(submission.id)
+    # Trigger Celery task for AI grading after transaction commits
+    transaction.on_commit(lambda: grade_submission_task.delay(submission.id))
 
     return created_images

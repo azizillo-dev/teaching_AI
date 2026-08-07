@@ -8,9 +8,10 @@ interface GroupCardProps {
   onEdit: (group: Group) => void;
   onDelete: (group: Group) => void;
   onClick: (group: Group) => void;
+  onAddStudent: (group: Group) => void;
 }
 
-export function GroupCard({ group, onEdit, onDelete, onClick }: GroupCardProps) {
+export function GroupCard({ group, onEdit, onDelete, onClick, onAddStudent }: GroupCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +36,7 @@ export function GroupCard({ group, onEdit, onDelete, onClick }: GroupCardProps) 
   return (
     <div
       onClick={() => onClick(group)}
-      className="group relative flex flex-col justify-between bg-card hover:bg-muted/30 border rounded-xl p-5 cursor-pointer transition-colors"
+      className="group relative flex flex-col justify-between bg-card hover:bg-accent/30 border border-border rounded-lg p-5 shadow-sm cursor-pointer transition-colors"
     >
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -58,6 +59,12 @@ export function GroupCard({ group, onEdit, onDelete, onClick }: GroupCardProps) 
           </Button>
           {menuOpen && (
             <div className="absolute right-0 top-full mt-1 w-40 bg-popover border shadow-lg rounded-md z-10 py-1 text-sm font-medium animate-in fade-in zoom-in-95">
+              <button
+                className="w-full text-left px-4 py-2 hover:bg-muted"
+                onClick={(e) => handleAction(e, () => onAddStudent(group))}
+              >
+                Add Student
+              </button>
               <button
                 className="w-full text-left px-4 py-2 hover:bg-muted"
                 onClick={(e) => handleAction(e, () => onEdit(group))}
@@ -84,16 +91,21 @@ export function GroupCard({ group, onEdit, onDelete, onClick }: GroupCardProps) 
         </div>
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-            <FileText className="w-3 h-3" /> Assignments
+            <FileText className="w-3 h-3" /> Tasks
           </span>
           <span className="font-medium">{group.assignment_count}</span>
         </div>
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-            <Activity className="w-3 h-3" /> AI Score
+            <Activity className="w-3 h-3" /> Score
           </span>
-          <span className="font-medium">{group.average_score.toFixed(1)}</span>
+          <span className="font-medium">{Number(group.average_score || 0).toFixed(1)}</span>
         </div>
+      </div>
+      <div className="mt-4 pt-4 border-t flex gap-2">
+         <Button variant="outline" size="sm" className="w-full text-xs font-medium" onClick={(e) => { e.stopPropagation(); onAddStudent(group); }}>
+            + Add Student
+         </Button>
       </div>
     </div>
   );

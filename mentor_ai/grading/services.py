@@ -13,6 +13,11 @@ from mentor_ai.grading.prompt_builder import build_grading_prompt
 class GeminiGradingService:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
+        if not self.api_key:
+            raise ValueError(
+                "GEMINI_API_KEY is not configured. "
+                "Set GEMINI_API_KEY in your .env file."
+            )
         self.model_name = settings.GEMINI_MODEL_NAME
         self.client = genai.Client(api_key=self.api_key)
 
@@ -54,7 +59,10 @@ class GeminiGradingService:
                         "type": "OBJECT",
                         "properties": {
                             "question": {"type": "STRING"},
-                            "reason": {"type": "STRING"},
+                            "student_answer": {"type": "STRING"},
+                            "correct_answer": {"type": "STRING"},
+                            "ai_explanation": {"type": "STRING"},
+                            "suggestion": {"type": "STRING"},
                         },
                     },
                 },

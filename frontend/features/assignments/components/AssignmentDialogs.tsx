@@ -25,9 +25,9 @@ function Modal({ isOpen, title, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-lg bg-background md:rounded-xl rounded-t-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95">
-        <h2 className="text-xl font-bold mb-6">{title}</h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 duration-200 p-4">
+      <div className="w-full max-w-md bg-background border rounded-lg p-5 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[85vh] overflow-y-auto">
+        <h2 className="text-lg font-bold tracking-tight mb-4">{title}</h2>
         {children}
       </div>
     </div>
@@ -59,15 +59,15 @@ export function CreateAssignmentDialog({ isOpen, onClose }: { isOpen: boolean; o
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Assignment">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Group</label>
+    <Modal isOpen={isOpen} onClose={onClose} title="Vazifa yaratish">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Guruh</label>
           <select 
             {...register("group")}
             className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.group ? "border-destructive" : ""}`}
           >
-            <option value="">Select a group...</option>
+            <option value="">Guruhni tanlang...</option>
             {groups?.map((g) => (
               <option key={g.id} value={g.id}>{g.name}</option>
             ))}
@@ -75,33 +75,33 @@ export function CreateAssignmentDialog({ isOpen, onClose }: { isOpen: boolean; o
           {errors.group && <p className="text-xs text-destructive">{errors.group.message}</p>}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Title</label>
-          <Input placeholder="E.g., Math Homework 4" {...register("title")} className={errors.title ? "border-destructive" : ""} />
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Sarlavha</label>
+          <Input placeholder="Masalan: Matematika uy ishi 4" {...register("title")} className={errors.title ? "border-destructive" : ""} />
           {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
         </div>
         
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Description</label>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Tavsif (Qo'llanma)</label>
           <textarea 
-            placeholder="Instructions for students..." 
+            placeholder="O'quvchilar uchun ko'rsatmalar..." 
             {...register("description")} 
-            className={`flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.description ? "border-destructive" : ""}`}
+            className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.description ? "border-destructive" : ""}`}
           />
           {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Deadline</label>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Topshirish muddati</label>
           <Input type="datetime-local" {...register("deadline")} className={errors.deadline ? "border-destructive" : ""} />
           {errors.deadline && <p className="text-xs text-destructive">{errors.deadline.message}</p>}
         </div>
 
-        <div className="pt-4 flex items-center justify-end gap-3 border-t mt-6">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={createMutation.isPending}>Cancel</Button>
-          <Button type="submit" disabled={createMutation.isPending}>
+        <div className="pt-3 flex gap-3 border-t mt-4">
+          <Button type="button" variant="outline" className="flex-1" onClick={onClose} disabled={createMutation.isPending}>Bekor qilish</Button>
+          <Button type="submit" className="flex-1" disabled={createMutation.isPending}>
             {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Publish Assignment
+            E'lon qilish
           </Button>
         </div>
       </form>
@@ -138,35 +138,35 @@ export function EditAssignmentDialog({ isOpen, onClose, assignment }: { isOpen: 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit Assignment">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Title</label>
-          <Input placeholder="E.g., Math Homework 4" {...register("title")} className={errors.title ? "border-destructive" : ""} />
+    <Modal isOpen={isOpen} onClose={onClose} title="Vazifani tahrirlash">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Sarlavha</label>
+          <Input placeholder="Masalan: Matematika uy ishi 4" {...register("title")} className={errors.title ? "border-destructive" : ""} />
           {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
         </div>
         
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Description</label>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Tavsif (Qo'llanma)</label>
           <textarea 
-            placeholder="Instructions for students..." 
+            placeholder="O'quvchilar uchun ko'rsatmalar..." 
             {...register("description")} 
-            className={`flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.description ? "border-destructive" : ""}`}
+            className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.description ? "border-destructive" : ""}`}
           />
           {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Deadline</label>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Topshirish muddati</label>
           <Input type="datetime-local" {...register("deadline")} className={errors.deadline ? "border-destructive" : ""} />
           {errors.deadline && <p className="text-xs text-destructive">{errors.deadline.message}</p>}
         </div>
 
-        <div className="pt-4 flex items-center justify-end gap-3 border-t mt-6">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={updateMutation.isPending}>Cancel</Button>
-          <Button type="submit" disabled={updateMutation.isPending}>
+        <div className="pt-3 flex gap-3 border-t mt-4">
+          <Button type="button" variant="outline" className="flex-1" onClick={onClose} disabled={updateMutation.isPending}>Bekor qilish</Button>
+          <Button type="submit" className="flex-1" disabled={updateMutation.isPending}>
             {updateMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Save Changes
+            Saqlash
           </Button>
         </div>
       </form>
@@ -187,20 +187,16 @@ export function DeleteAssignmentDialog({ isOpen, onClose, assignment }: { isOpen
   if (!assignment) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Delete Assignment">
+    <Modal isOpen={isOpen} onClose={onClose} title="Vazifani o'chirish">
       <div className="space-y-4">
-        <div className="p-4 rounded-lg flex items-start gap-3 bg-destructive/10 text-destructive">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="text-sm leading-relaxed">
-            <p className="font-semibold mb-1">Are you completely sure?</p>
-            <p>Deleting <strong>{assignment.title}</strong> will permanently remove it along with all student submissions. This action cannot be undone.</p>
-          </div>
-        </div>
-        <div className="pt-4 flex items-center justify-end gap-3 border-t mt-6">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={deleteMutation.isPending}>Cancel</Button>
-          <Button type="button" variant="destructive" onClick={onDelete} disabled={deleteMutation.isPending}>
+        <p className="text-sm text-foreground">
+          Siz haqiqatan ham ushbu vazifani o'chirib yubormoqchimisiz? Rozimisiz?
+        </p>
+        <div className="pt-4 flex gap-3 mt-4">
+          <Button type="button" variant="outline" className="flex-1" onClick={onClose} disabled={deleteMutation.isPending}>Bekor qilish</Button>
+          <Button type="button" variant="destructive" className="flex-1" onClick={onDelete} disabled={deleteMutation.isPending}>
             {deleteMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Delete
+            Ha
           </Button>
         </div>
       </div>

@@ -10,6 +10,7 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  is_trial_active?: boolean;
 }
 
 interface AuthContextType {
@@ -66,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsAuthenticated(true);
     setUser(parseUser(token));
     const role = parseUser(token)?.role;
-    router.push(role === "student" ? "/student/assignments" : "/groups");
+    router.push(role === "student" ? "/student" : "/");
   };
 
   const logout = () => {
@@ -79,20 +80,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Redirect logic
   useEffect(() => {
-    const requireAuth = pathname !== "/login";
-    const defaultRoute = user?.role === "student" ? "/student/assignments" : "/groups";
+    const publicRoutes = ["/login", "/register", "/forgot-password", "/pricing"];
+    const isPublicRoute = publicRoutes.includes(pathname);
     
     if (!isLoading) {
-      if (requireAuth && !user) {
+      if (!isPublicRoute && !user) {
         router.push("/login");
-      } else if (!requireAuth && user) {
-        router.push(defaultRoute);
-      } else if (user && pathname === "/") {
-        router.push(defaultRoute);
-      } else if (user && user.role === "teacher" && pathname.startsWith("/student")) {
-        router.push("/groups");
-      } else if (user && user.role === "student" && !pathname.startsWith("/student") && pathname !== "/login") {
-        router.push("/student/assignments");
+      } else if (isPublicRoute && user && pathname !== "/pricing") {
+        router.push(user.role === "student" ? "/student" : "/");
+      } else if (user) {
+        const isStudentPortal = pathname === "/student" || pathname.startsWith("/student/");
+        if (user.role === "student" && !isStudentPortal) {
+          router.push("/student");
+        } else if (user.role === "teacher" && isStudentPortal) {
+          router.push("/");
+        }
       }
     }
   }, [user, isLoading, pathname, router]);
