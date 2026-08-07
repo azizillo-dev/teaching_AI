@@ -5,6 +5,7 @@ import { Plus, Users } from "lucide-react";
 import { useGroups } from "@/features/groups/hooks";
 import { GroupCard } from "@/features/groups/components/GroupCard";
 import { CreateGroupDialog, EditGroupDialog, DeleteGroupDialog } from "@/features/groups/components/GroupDialogs";
+import { CreateStudentDialog } from "@/features/students/components/StudentDialogs";
 import { Button } from "@/components/ui/button";
 import { Group } from "@/features/groups/schema";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -14,6 +15,7 @@ export default function GroupsPage() {
   const { data: groups, isLoading, isError, refetch } = useGroups();
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createStudentGroup, setCreateStudentGroup] = useState<string | null>(null);
   const [editGroup, setEditGroup] = useState<Group | null>(null);
   const [deleteGroup, setDeleteGroup] = useState<Group | null>(null);
 
@@ -46,12 +48,12 @@ export default function GroupsPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8 pb-24 md:pb-8 h-full">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Groups</h1>
-          <p className="text-muted-foreground mt-1">Manage your classes</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">All Groups</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage your classes and students</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="hidden md:flex">
+        <Button onClick={() => setIsCreateOpen(true)} className="hidden md:flex shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
           New Group
         </Button>
@@ -73,6 +75,7 @@ export default function GroupsPage() {
               group={group}
               onEdit={(g) => setEditGroup(g)}
               onDelete={(g) => setDeleteGroup(g)}
+              onAddStudent={(g) => setCreateStudentGroup(g.id)}
               onClick={(g) => {
                 // Navigate to group details in the future
                 console.log("Navigating to group", g.id);
@@ -94,6 +97,7 @@ export default function GroupsPage() {
       <CreateGroupDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
       <EditGroupDialog isOpen={!!editGroup} onClose={() => setEditGroup(null)} group={editGroup} />
       <DeleteGroupDialog isOpen={!!deleteGroup} onClose={() => setDeleteGroup(null)} group={deleteGroup} />
+      <CreateStudentDialog isOpen={!!createStudentGroup} onClose={() => setCreateStudentGroup(null)} initialGroupId={createStudentGroup} />
     </div>
   );
 }

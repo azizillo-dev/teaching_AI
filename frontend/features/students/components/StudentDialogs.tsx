@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, AlertCircle, Copy, CheckCircle2 } from "lucide-react";
 import { studentCreateSchema, studentUpdateSchema, type StudentCreateFormData, type StudentUpdateFormData, type Student, type StudentCreateResponse } from "@/features/students/schema";
-import { useCreateStudent, useUpdateStudent } from "@/features/students/hooks";
+import { useCreateStudent, useUpdateStudent, useDeleteStudent } from "@/features/students/hooks";
 import { useGroups } from "@/features/groups/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,9 +25,9 @@ function Modal({ isOpen, title, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-lg bg-background md:rounded-xl rounded-t-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95">
-        <h2 className="text-xl font-bold mb-6">{title}</h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 duration-200 p-4">
+      <div className="w-full max-w-md bg-background border rounded-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[85vh]">
+        <h2 className="text-lg font-bold tracking-tight mb-5">{title}</h2>
         {children}
       </div>
     </div>
@@ -216,6 +216,36 @@ export function DeactivateStudentDialog({ isOpen, onClose, student }: { isOpen: 
           <Button type="button" variant={student.is_active ? "destructive" : "default"} onClick={student.is_active ? onDeactivate : onActivate} disabled={updateMutation.isPending}>
             {updateMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {student.is_active ? "Deactivate" : "Activate"}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+export function DeleteStudentDialog({ isOpen, onClose, student }: { isOpen: boolean; onClose: () => void; student: Student | null }) {
+  const deleteMutation = useDeleteStudent();
+
+  const onDelete = () => {
+    if (!student) return;
+    deleteMutation.mutate(student.profile_id, {
+      onSuccess: () => onClose(),
+    });
+  };
+
+  if (!student) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Talabani o'chirish">
+      <div className="space-y-4">
+        <p className="text-sm text-foreground">
+          Bu amal <strong>{student.first_name} {student.last_name}</strong>ning barcha ma'lumotlarini o'chiradi. Rozimisiz?
+        </p>
+        <div className="pt-4 flex items-center justify-end gap-3 mt-4">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={deleteMutation.isPending}>Bekor qilish</Button>
+          <Button type="button" variant="destructive" onClick={onDelete} disabled={deleteMutation.isPending}>
+            {deleteMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Ha
           </Button>
         </div>
       </div>

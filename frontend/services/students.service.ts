@@ -14,4 +14,7 @@ export const StudentsService = {
     const response = await api.patch<Student>(`/classrooms/students/${id}/`, data);
     return response.data;
   },
+  deleteStudent: async (id: string): Promise<void> => {
+    await api.delete(`/classrooms/students/${id}/`);
+  },
 };

@@ -1,4 +1,7 @@
 import collections
+from datetime import timedelta
+
+from django.utils import timezone
 
 from django.db.models import Avg, Count, Max, Min, Q
 from django.db.models.functions import Coalesce
@@ -141,6 +144,8 @@ def get_teacher_dashboard_data(*, teacher: User) -> dict:
 
         recent_activity.append(
             {
+                "submission_id": str(sub.id),
+                "assignment_id": str(sub.assignment.id),
                 "student": f"{sub.student.first_name} {sub.student.last_name}".strip()
                 or sub.student.email,
                 "group": sub.assignment.group.name,
@@ -159,3 +164,121 @@ def get_teacher_dashboard_data(*, teacher: User) -> dict:
         "common_mistakes": common_mistakes,
         "recent_activity": recent_activity,
     }
+
+def get_student_dashboard_data(*, student: User) -> dict:
+    try:
+        profile = student.student_profile
+    except StudentProfile.DoesNotExist:
+        return {}
+
+    membership = profile.memberships.first()
+    if not membership:
+        teacher = profile.created_by
+        return {
+            "group_id": None,
+            "group_name": None,
+            "teacher_name": f"{teacher.first_name} {teacher.last_name}".strip() or teacher.email,
+            "leaderboard": [],
+        }
+
+    group = membership.group
+    teacher = group.owner
+
+    group_students = (
+        User.objects.filter(student_profile__memberships__group=group)
+        .annotate(
+            average_score=Coalesce(Avg("submissions__check_result__score", filter=Q(submissions__assignment__group=group)), 0.0)
+        )
+        .order_by("-average_score")
+    )
+
+    leaderboard = [
+        {
+            "student_id": str(s.id),
+            "full_name": f"{s.first_name} {s.last_name}".strip() or s.email,
+            "average_score": round(float(s.average_score), 2),
+            "is_me": s.id == student.id,
+        }
+        for s in group_students
+    ]
+
+    return {
+        "group_id": str(group.id),
+        "group_name": group.name,
+        "teacher_name": f"{teacher.first_name} {teacher.last_name}".strip() or teacher.email,
+        "leaderboard": leaderboard,
+    }
+
+def get_teacher_analytics_data(*, teacher: User, group_id: str | None = None) -> dict:
+    # 1. Fetch available groups
+    groups = Group.objects.filter(owner=teacher).values("id", "name")
+    
+    selected_group = None
+    if group_id:
+        selected_group = Group.objects.filter(owner=teacher, id=group_id).first()
+    elif groups:
+        selected_group = Group.objects.filter(owner=teacher, id=groups[0]["id"]).first()
+
+    top_students = []
+    if selected_group:
+        student_qs = User.objects.filter(
+            student_profile__memberships__group=selected_group,
+            is_active=True
+        ).annotate(
+            average_score=Coalesce(Avg("submissions__check_result__score", filter=Q(submissions__assignment__group=selected_group)), 0.0)
+        ).order_by("-average_score")[:3]
+        
+        top_students = [
+            {
+                "student_id": str(s.id),
+                "full_name": f"{s.first_name} {s.last_name}".strip() or s.email,
+                "average_score": round(float(s.average_score), 2),
+                "initials": f"{s.first_name[0] if s.first_name else ''}{s.last_name[0] if s.last_name else ''}".strip().upper() or "S"
+            }
+            for s in student_qs
+        ]
+
+    # Weekly and Monthly Stats scoped to selected group
+    now = timezone.now()
+    week_ago = now - timedelta(days=7)
+    month_ago = now - timedelta(days=30)
+    
+    assignment_filter = Q(created_by=teacher)
+    if selected_group:
+        assignment_filter &= Q(group=selected_group)
+
+    # Weekly
+    weekly_assignments = Assignment.objects.filter(assignment_filter, created_at__gte=week_ago)
+    weekly_expected = sum(a.group.memberships.filter(student_profile__user__is_active=True).count() for a in weekly_assignments)
+    weekly_completed = Submission.objects.filter(
+        assignment__in=weekly_assignments,
+        status__in=[Submission.Status.SUBMITTED, Submission.Status.CHECKING, Submission.Status.CHECKED]
+    ).count()
+    weekly_not_completed = max(0, weekly_expected - weekly_completed)
+    
+    # Monthly
+    monthly_assignments = Assignment.objects.filter(assignment_filter, created_at__gte=month_ago)
+    monthly_expected = sum(a.group.memberships.filter(student_profile__user__is_active=True).count() for a in monthly_assignments)
+    monthly_completed = Submission.objects.filter(
+        assignment__in=monthly_assignments,
+        status__in=[Submission.Status.SUBMITTED, Submission.Status.CHECKING, Submission.Status.CHECKED]
+    ).count()
+    monthly_not_completed = max(0, monthly_expected - monthly_completed)
+    
+    return {
+        "groups": [{"id": str(g["id"]), "name": g["name"]} for g in groups],
+        "selected_group_id": str(selected_group.id) if selected_group else None,
+        "selected_group_name": selected_group.name if selected_group else None,
+        "top_students": top_students,
+        "weekly_stats": {
+            "completed": weekly_completed,
+            "not_completed": weekly_not_completed,
+            "total": weekly_expected
+        },
+        "monthly_stats": {
+            "completed": monthly_completed,
+            "not_completed": monthly_not_completed,
+            "total": monthly_expected
+        }
+    }
+

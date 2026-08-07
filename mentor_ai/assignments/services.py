@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+from datetime import timedelta
 
 from mentor_ai.assignments.models import (
     Assignment,
@@ -8,6 +9,7 @@ from mentor_ai.assignments.models import (
     SubmissionImage,
 )
 from mentor_ai.classrooms.models import Group, GroupMembership
+from mentor_ai.library.models import Book
 from mentor_ai.users.models import User
 
 MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
@@ -28,26 +30,49 @@ def _validate_group_ownership(group: Group, teacher: User):
 # ──────────────────────────────────────────────
 
 
+@transaction.atomic
 def assignment_create(
     *,
     group: Group,
     title: str,
-    description: str,
-    deadline,
+    description: str = "",
+    book: Book | None = None,
+    page_start: int | None = None,
+    page_end: int | None = None,
     created_by: User,
 ) -> Assignment:
+    from mentor_ai.assignments.tasks import extract_assignment_content
+    
     _validate_group_ownership(group, created_by)
-    _validate_deadline(deadline)
+
+    if book:
+        if page_start is None or page_end is None:
+            raise ValidationError("Kitob tanlanganda sahifa oralig'i (page_start, page_end) ko'rsatilishi shart.")
+        if book.total_pages:
+            if not (1 <= page_start <= page_end <= book.total_pages):
+                raise ValidationError(f"Sahifalar oralig'i noto'g'ri. Kitobda {book.total_pages} ta sahifa bor.")
+        else:
+            if not (1 <= page_start <= page_end):
+                raise ValidationError("Sahifalar oralig'i noto'g'ri.")
+    
+    deadline = timezone.now() + timedelta(hours=48)
 
     assignment = Assignment(
         group=group,
         title=title,
         description=description,
+        book=book,
+        page_start=page_start,
+        page_end=page_end,
         deadline=deadline,
         created_by=created_by,
     )
     assignment.full_clean()
     assignment.save()
+    
+    if book and page_start and page_end:
+        transaction.on_commit(lambda: extract_assignment_content.delay(assignment.id))
+
     return assignment
 
 
@@ -56,16 +81,12 @@ def assignment_update(
     assignment: Assignment,
     title: str | None = None,
     description: str | None = None,
-    deadline=None,
     is_active: bool | None = None,
 ) -> Assignment:
     if title is not None:
         assignment.title = title
     if description is not None:
         assignment.description = description
-    if deadline is not None:
-        _validate_deadline(deadline)
-        assignment.deadline = deadline
     if is_active is not None:
         assignment.is_active = is_active
 
@@ -143,7 +164,7 @@ def submission_upload_images(*, submission: Submission, images: list) -> list[Su
     submission.status = Submission.Status.SUBMITTED
     submission.save(update_fields=["status"])
 
-    # Trigger Celery task for AI grading
-    grade_submission_task.delay(submission.id)
+    # Trigger Celery task for AI grading after transaction commits
+    transaction.on_commit(lambda: grade_submission_task.delay(submission.id))
 
     return created_images

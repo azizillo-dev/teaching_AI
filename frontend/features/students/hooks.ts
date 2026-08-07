@@ -27,3 +27,13 @@ export const useUpdateStudent = () => {
     },
   });
 };
+
+export const useDeleteStudent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: StudentsService.deleteStudent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+  });
+};

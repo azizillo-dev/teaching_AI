@@ -11,3 +11,12 @@ class IsTeacherForDashboard(permissions.BasePermission):
             request.user.is_authenticated
             and request.user.role == User.Role.TEACHER
         )
+
+class IsStudentForDashboard(permissions.BasePermission):
+    message = "Faqat talabalar dashboardga kira oladi."
+
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.user.role == User.Role.STUDENT
+        )

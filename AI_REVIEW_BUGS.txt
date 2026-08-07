@@ -1,0 +1,519 @@
+Mana ushbu hujjatning ma'nosi va barcha texnik tafsilotlari to'liq saqlangan holda o'zbek tilidagi professional tarjimasi:
+
+MENTOR AI - AI TEKSHIRUVI: BUG (XATOLIK) VA XAVF-XATARLAR BO'YICHA QAYDLAR
+Yaratilgan sana: 2026-08-06
+
+Maqsadi: Ushbu fayl kelajakdagi AI yoki kodni ko'rib chiquvchi (reviewer) loyihadagi mavjud xavf-xatarlarni tezda tushunishi va ularni xavfsiz tuzatishi uchun yozilgan.
+
+MUHIM
+Ushbu sharh davomida manba kodi (source code) o'zgartirilmadi.
+
+Ushbu qaydlar tasdiqlangan buglar, yuzaga kelishi mumkin bo'lgan runtime (bajarilish vaqtidagi) muammolar va kelajakda xatolik keltirib chiqarishi mumkin bo'lgan joylarni tasvirlaydi.
+
+Tuzatish kiritishdan oldin pastda ko'rsatilgan tekshirish buyruqlarini qayta ishga tushiring, chunki repozitoriy o'zgargan bo'lishi mumkin.
+
+LOYIHA HAQIDA QISQACHA MA'LUMOT
+Backend: Django + Django REST Framework + SimpleJWT + Celery + Redis + Gemini.
+
+Frontend: Next.js + React + TypeScript + React Query + Axios.
+
+Asosiy oqim (Main flow): O'qituvchi guruhlar/talabalar/topshiriqlarni yaratadi, talaba uy vazifasi rasmlarini yuklaydi, Celery rasmlarni Gemini'ga yuboradi, natija CheckResult modelida saqlanadi, frontend dashboard hamda topshiriq bo'yicha aks-aloqani (feedback) ko'rsatadi.
+
+KODNING TAXMINIY HAJMI
+venv, node_modules, .next, lock/build/binary/image fayllarini hisobga olmaganda, testlar/konfiguratsiya/hujjatlar bilan birga manba kodi: taxminan 6,075 qator.
+
+Testlar, migratsiyalar, hujjatlar va yordamchi test_flow.py faylini hisobga olmaganda asosiy ilova kodi: taxminan 5,249 qator.
+
+Testlar/migratsiyalardan tashqari Backend ilovasi kodi: taxminan 2,012 qator.
+
+Frontend ilovasi kodi: taxminan 3,222 qator.
+
+TEKSHIRUV (VERIFICATION) NATIJALARI
+Frontend eslint: o'tdi (passed).
+
+Frontend TypeScript tekshiruvi: o'tdi (passed).
+
+Frontend production build: o'tdi (passed).
+
+Django tizim tekshiruvi (system check): faqat ushbu buyruq uchun DEBUG majburiy ravishda True qilingandagina o'tdi.
+
+mentor_ai/tests ichidagi Django testlari: 15 tasi muvaffaqiyatli o'tdi.
+
+To'liq pytest: 15 tasi o'tdi, 1 tasi muvaffaqiyatsiz tugadi (failed).
+
+Muvaffaqiyatsizlik sababi: Ildiz katalogdagi test_flow.py fayli [http://127.0.0.1:8000/api/v1](http://127.0.0.1:8000/api/v1) manzilida ishlayotgan live serverga murojaat qilishga urinadi, lekin hech qanday server ishlamayotgan edi.
+
+YUQORI USTUVORLIKDAGI MUAMMOLAR (HIGH PRIORITY ISSUES)
+1. CORS sozlanmagani sababli brauzer API so'rovlari muvaffaqiyatsiz tugashi mumkin.
+Fayllar:
+
+frontend/constants/index.ts
+
+mentor_ai/settings.py
+
+requirements.txt
+
+Tasdiqlovchi faktlar (Evidence):
+
+Frontend'ning standart API bazaviy manzili: http://localhost:8000/api/v1.
+
+Backend sozlamalarida django-cors-headers, corsheaders ilovasi yoki CorsMiddleware mavjud emas.
+
+Nima uchun bu muhim:
+
+Brauzerda localhost:3000 portida ishlayotgan frontend localhost:8000 portidagi backend'ga murojaat qilishi cross-origin (turli kelib chiqish manbasi) hisoblanadi. CORS sarlavhalari bo'lmasa, brauzer so'rovlarni bloklab qo'yishi mumkin.
+
+Tavsiya etiladigan tuzatish:
+
+requirements.txt fayliga django-cors-headersni qo'shing.
+
+INSTALLED_APPS ro'yxatiga "corsheaders"ni qo'shing.
+
+MIDDLEWARE ichida, CommonMiddlewaredan teparoqqa "corsheaders.middleware.CorsMiddleware"ni qo me'yorda joylashtiring.
+
+.env faylidagi FRONTEND_URLdan foydalanib CORS_ALLOWED_ORIGINSni qo'shing (masalan: http://localhost:3000).
+
+Haqiqiy brauzerda frontend login, guruhlar va topshiriqlar ishlashini tasdiqlang.
+
+2. AI javob sxemasi (schema) frontend ko'rsatishi kutilayotgan ma'lumotlarga mos kelmaydi.
+Fayllar:
+
+mentor_ai/grading/services.py
+
+mentor_ai/grading/prompt_builder.py
+
+mentor_ai/assignments/serializers.py
+
+frontend/app/(student)/student/assignments/[id]/page.tsx
+
+frontend/app/(dashboard)/assignments/[id]/submissions/[subId]/page.tsx
+
+Tasdiqlovchi faktlar (Evidence):
+
+Gemini sxemasi xatolar (mistakes) tarkibida question + reason bo'lishini so'raydi.
+
+SubmissionReadSerializer xatolarni question, student_answer, correct_answer, ai_explanation, suggestion ko'rinishida normallashtiradi (o'zgartiradi).
+
+Frontend esa student_answer, correct_answer, ai_explanation, suggestion maydonlarini ko'rsatadi.
+
+Nima uchun bu muhim:
+
+AI xatolarni to'g'ri aniqlashi mumkin, lekin reason maydoni ai_explanationga o'girilmagani sababli UI (interfeys) bo'sh joylarni ko'rsatishi mumkin.
+
+Tavsiya etiladigan tuzatish variantlari:
+
+Oddiy tuzatish: SubmissionReadSerializer.get_mistakes() ichida m.get("ai_explanation") yoki m.get("reason")ni ai_explanationga o'giring (mapping qiling).
+
+Yaxshiroq tuzatish: Gemini response_schema va promptini quyidagilarni qaytaradigan qilib yangilang: question, student_answer, correct_answer, ai_explanation, suggestion.
+
+API displey uchun tayyor xatolik maydonlarini qaytarayotganini tasdiqlash uchun testlar qo'shing/moslang.
+
+3. Celery vazifasi ma'lumotlar bazasi tranzaksiyasi ichida chaqirilmoqda.
+Fayl:
+
+mentor_ai/assignments/services.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+submission_upload_images funktsiyasi @transaction.atomic bilan o'ralgan.
+
+grade_submission_task.delay(submission.id) chaqiruvi tranzaksiya to'liq saqlanishi (commit bo'lishi) kafolatlanishidan oldin bajarilmoqda.
+
+Nima uchun bu muhim:
+
+Production muhitida Celery worker yuklangan rasm qatorlari/fayllari ma'lumotlar bazasiga to'liq yozilishidan oldin ishga tushib ketishi mumkin. Natijada task rasmlarni ko'rmasligi va baholashni o'tkazib yuborishi mumkin.
+
+Tavsiya etiladigan tuzatish:
+
+transaction.on_commit(lambda: grade_submission_task.delay(submission.id))dan foydalaning.
+
+Task rejalashtirishi commit'dan keyin sodir bo'lishini tekshiradigan test yoki kod sharhi qo'shing.
+
+4. Qayta yuklashdan himoya qilish faqat "submitted" statusini bloklaydi.
+Fayl:
+
+mentor_ai/assignments/views.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+upload_images faqat submission.status == Submission.Status.SUBMITTED bo'lgandagina rad etadi.
+
+Nima uchun bu muhim:
+
+Talaba status checking (tekshirilmoqda), checked (tekshirildi) yoki failed (muvaffaqiyatsiz) bo'lgan paytda ham (vaqt va UI/API foydalanishiga qarab) qayta rasm yuklashi mumkin bo'lib qoladi.
+
+Tavsiya etiladigan tuzatish:
+
+Kerakli biznes-mantiqni belgilab oling.
+
+Agar bitta topshiriq uchun faqat bir marta yuklash ko'zda tutilgan bo'lsa, rasmlari mavjud bo'lgan yoki statusi submitted/checking/checked bo'lgan har qanday topshiriqni bloklang.
+
+Agar muvaffaqiyatsizlikdan (failed) keyin qayta urinishga ruxsat berilsa, faqat failed statusiga aniq ruxsat bering va eski rasmlarni tozalang yoki versiyalang.
+
+submitted, checking, checked va failed holatlari uchun testlar qo'shing.
+
+5. Manual live-server skripti test sifatida yig'ib olingani uchun to'liq pytest muvaffaqiyatsiz tugaydi.
+Fayllar:
+
+pytest.ini
+
+test_flow.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+pytest.ini fayli python_files = test_*.py qoidasi bo'yicha fayllarni yig'adi.
+
+test_flow.py [http://127.0.0.1:8000/api/v1](http://127.0.0.1:8000/api/v1)ga so'rovlar yuboradi.
+
+Nima uchun bu muhim:
+
+CI yoki boshqa AI "pytest"ni ishga tushirganda, oddiy Django testlari o'tgan bo'lsa ham, loyihani muvaffaqiyatsiz (failing) deb topadi.
+
+Tavsiya etiladigan tuzatish variantlari:
+
+test_flow.py faylini scripts/manual_flow.py joylashuviga o'tkazing.
+
+Yoki RUN_LIVE_E2E=1 kabi muhit o'zgaruvchisi o'rnatilmagan bo'lsa, uni pytest.mark.skip bilan o'tkazib yuboriladigan qiling.
+
+Yoki pytest.ini ichida testpaths = mentor_ai/tests deb yangilang.
+
+O'RTA USTUVORLIKDAGI MUAMMOLAR (MEDIUM PRIORITY ISSUES)
+6. DEBUG muhit o'zgaruvchisi Django ishga tushishini buzishi mumkin.
+Fayllar:
+
+mentor_ai/settings.py
+
+.env
+
+.env.example
+
+Tasdiqlovchi faktlar (Evidence):
+
+settings.py faylida config("DEBUG", cast=bool) ishlatilgan.
+
+Tekshiruv vaqtida tizim o'zgaruvchisidagi DEBUG qiymati "release" bo'lgani sababli ushbu xatolik chiqdi: ValueError: Invalid truth value: release.
+
+Nima uchun bu muhim:
+
+Kompyuterdagi global muhit o'zgaruvchisi .env faylini ustidan yozib yuborishi va Django ishga tushmasidanoq uni bo'zishi mumkin.
+
+Tavsiya etiladigan tuzatish variantlari:
+
+Toqnashuvlarni oldini olish uchun loyiha sozlamasini DJANGO_DEBUG deb qayta nomlang.
+
+Yoki DEBUG qiymati true/false/1/0/yes/no bo'lishi kerakligini hujjatlashtiring.
+
+Toza terminalda manage.py check buyrug'ini qayta ishga tushiring.
+
+7. JWT tokenni qora ro'yxatga olish (blacklist) sozlamalari yoqilgan, lekin blacklist ilovasi o'rnatilmagan.
+Fayl:
+
+mentor_ai/settings.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+SIMPLE_JWTda ROTATE_REFRESH_TOKENS=True va BLACKLIST_AFTER_ROTATION=True o'rnatilgan.
+
+INSTALLED_APPS tarkibida rest_framework_simplejwt bor, lekin rest_framework_simplejwt.token_blacklist yo'q.
+
+Nima uchun bu muhim:
+
+Refresh tokenlarni rotatsiya qilish va qora ro'yxatga olish kutilganidek ishlamasligi hamda SimpleJWT xulq-atvoriga qarab xatolik berishi mumkin.
+
+Tavsiya etiladigan tuzatish:
+
+INSTALLED_APPS ro'yxatiga "rest_framework_simplejwt.token_blacklist"ni qo'shing.
+
+Migratsiyalarni ishga tushiring.
+
+Refresh token rotatsiyasini test qiling.
+
+8. README faylidagi ishga tushirish buyruqlarida backend katalogi ko'rsatmalari noto'g'ri.
+Fayl:
+
+README.md
+
+Tasdiqlovchi faktlar (Evidence):
+
+manage.py ildiz katalogda (repo root) joylashgan.
+
+README esa cd mentor_ai, so'ngra python manage.py migrate/runserver deb ko'rsatgan.
+
+Nima uchun bu muhim:
+
+README ko me me'yorida amal qiladigan yangi dasturchilar yoki AI buyruqlarni noto'g'ri papkada ishga tushirib xatolikka uchrashadi.
+
+Tavsiya etiladigan tuzatish:
+
+Backend buyruqlarini ildiz katalogdan ishga tushirishni ko'rsating:
+
+Bash
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
+Celery ham ildiz katalogdan ishga tushirilishi kerak:
+
+Bash
+celery -A mentor_ai worker -l info -P eventlet
+9. README'da FRONTEND_URL haqida aytilgan, lekin settings.py undan foydalanmaydi.
+Fayllar:
+
+README.md
+
+.env.example
+
+mentor_ai/settings.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+FRONTEND_URL .env.example va README'da mavjud.
+
+settings.py fayli FRONTEND_URLni o me me'yorida o'qimaydi.
+
+Nima uchun bu muhim:
+
+Hujjatlarda ushbu sozlama API so'rovlarini to'g'rilaydi deyilgan, lekin amalda u hech qanday ta'sirga ega emas. Bu CORS muammosiga ham bog'liq.
+
+Tavsiya etiladigan tuzatish:
+
+FRONTEND_URLdan CORS_ALLOWED_ORIGINSda va agar cookie/session yoki admin so'rovlari kerak bo'lsa CSRF_TRUSTED_ORIGINSda foydalaning.
+
+10. Talabalar uchun parol yaratishda secrets o'rniga random ishlatilgan.
+Fayl:
+
+mentor_ai/classrooms/services.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+_generate_password funktsiyasi random.choicesdan foydalanadi.
+
+Nima uchun bu muhim:
+
+Python'dagi random moduli xavfsiz parollar yaratish uchun mo me me'yolanmagan.
+
+Tavsiya etiladigan tuzatish:
+
+secrets.choice yoki secrets.token_urlsafedan foydalaning.
+
+Nusxalash/joylashtirish yoki mobil kiritishda muammo bo'lmasligi uchun xavfsizlik darajasini saqlagan holda tinish belgilaridan qochishni ko'rib chiqing.
+
+11. Yaratilgan talaba paroli frontend'da ko'rsatiladi.
+Fayllar:
+
+mentor_ai/classrooms/services.py
+
+frontend/features/students/components/StudentDialogs.tsx
+
+Tasdiqlovchi faktlar (Evidence):
+
+Talaba yaratilganda ochiq (raw) parol qaytariladi.
+
+UI uni ko'rsatadi va nusxalashga imkon beradi.
+
+Nima uchun bu muhim:
+
+Bu bir marta hisob yaratish uchun maqbul bo'lishi mumkin, lekin bu maxfiy ma'lumotdir.
+
+Tavsiya etiladigan tuzatish:
+
+Uni faqat bir martalik qiling va hech qachon loglarga yozmang.
+
+O'qituvchilar uchun ushbu parolni qayta ko'rib bo'lmasligi haqida ogohlantirish qo'shing.
+
+Kelajakda talaba birinchi marta kirganda parolni o'zgartirishini majburiy qilishni o me me'yolang.
+
+12. Gemini API kaliti bo'sh bo'lishi va faqat baholash paytida xato berishi mumkin.
+Fayllar:
+
+mentor_ai/settings.py
+
+mentor_ai/grading/services.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+GEMINI_API_KEY default holatda bo'sh satr deb olingan.
+
+Nima uchun bu muhim:
+
+Dastur ishga tushishi mumkin, lekin baholash jarayoni boshlanganda tushunarsiz xatolik bilan to'xtaydi.
+
+Tavsiya etiladigan tuzatish:
+
+Baholash boshlanganda GEMINI_API_KEY mavjudligini tekshiring va aniq konfiguratsiya xatosini qaytaring.
+
+Ishchi (production) muhitda kalit yo'q bo'lsa, dastur ishga tushishdanoq to me'yotilsin (fail fast).
+
+13. Gemini model nomi tekshirilishi kerak.
+Fayl:
+
+mentor_ai/settings.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+GEMINI_MODEL_NAME default holatda gemini-3-flash deb ko'rsatilgan.
+
+Nima uchun bu muhim:
+
+Agar sozlamadagi model mavjud bo me me'yolmasa, nomi o'zgargan bo'lsa yoki rasm kirishini/strukturalangan chiqishni qo'llab-quvvatlamasa, baholash muvaffaqiyatsiz tugaydi.
+
+Tavsiya etiladigan tuzatish:
+
+Sozlanga model ishlatilayotgan Gemini API hisobida mavjudligini tasdiqlang.
+
+Model nomini .env orqali o'zgartirish imkoniyatini saqlab qoling.
+
+AI sozlamalarini tekshirish uchun kichik health-check yoki admin-diagnostika qo'shing.
+
+14. Next build o'tdi, lekin SWC binar fayli bo'yicha ogohlantirish paydo bo'ldi.
+Joylashuv:
+
+frontend/node_modules / mahalliy o'rnatish
+
+Tasdiqlovchi faktlar (Evidence):
+
+npm run build muvaffaqiyatli o'tdi, lekin Next.js @next/swc-win32-x64-msvc binar fayli to me me'yori Win32 ilovasi emasligi haqida ogohlantirdi. Next.js WASM zaxira usulidan foydalandi.
+
+Nima uchun bu muhim:
+
+Build ishlaydi, lekin ushbu kompyuterda local dev/build sekinroq yoki nobarqaror bo'lishi mumkin.
+
+Tavsiya etiladigan tuzatish:
+
+Agar jamoa rozi bo'lsa, frontend bog'liqliklarini (dependencies) qayta o'rnating: node_modules va package-lockni o'chirib, npm install qiling.
+
+Node arxitekturasi va versiyasi kompyuterga mos kelishini tekshiring.
+
+15. Ba'zi Python satrlari/izohlarida kodirovkaga oid xatoliklar (artifacts) ko'rinmoqda.
+Fayllar:
+
+mentor_ai/assignments/models.py
+
+mentor_ai/assignments/services.py
+
+mentor_ai/classrooms/models.py
+
+va boshqa buzuq strelka/tire belgilari bo'lgan fayllar
+
+Tasdiqlovchi faktlar (Evidence):
+
+"в†’" yoki "вЂ”" kabi satrlar paydo bo'lgan.
+
+Nima uchun bu muhim:
+
+Asosan kosmetik muammo, lekin kelajakdagi reviewer'larni chalg'itishi va admin paneldagi matnlarni xunuk ko'rsatishi mumkin.
+
+Tavsiya etiladigan tuzatish:
+
+Buzuq belgilarni ASCII muqobillari bilan almashtiring (masalan - va ->).
+
+Fayllar kodirovkasini (UTF-8) bir xil saqlang.
+
+PAST USTUVORLIKDAGI MUAMMOLAR / TOZALASH QAYDLARI
+16. urls.py ichidagi dinamik importni o'qish qiyin.
+Fayl:
+
+mentor_ai/urls.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+TokenObtainPairView.as_view __import__(...)dan foydalanadi.
+
+Nima uchun bu muhim:
+
+U ishlaydi, lekin kodni o'qish va statik tahlil qilishni qiyinlashtiradi.
+
+Tavsiya etiladigan tuzatish:
+
+CustomTokenObtainPairSerializerni fayl tepasida odatiy usulda import qiling.
+
+17. Ba'zi keng ko'lamli istisnolarni ushlash (broad exception handling) haqiqiy xatolarni yashiradi.
+Fayllar:
+
+mentor_ai/classrooms/views.py
+
+mentor_ai/grading/tasks.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+Ba'zi endpoint'lar "topilmadi" holati uchun except Exception ishlatadi.
+
+Grading task qayta urinish uchun barcha Exceptionlarni ushlaydi.
+
+Nima uchun bu muhim:
+
+Keng ko'lamli ushlashlar dasturlash xatolarini 404 xatosi yoki qayta urinishlar ortiga yashirib qo'yishi mumkin.
+
+Tavsiya etiladigan tuzatish:
+
+View'larda aniq DoesNotExist istisnosini ushlang.
+
+Celery uchun umumiy qayta urinish to me me'yori bo'lishi mumkin, lekin yetarlicha log yozing va konfiguratsiya xatolarini API uzilishlaridan ajrating.
+
+18. Dashboard keshi 60 soniyagacha eskirgan ma ma'lumotlarni ko'rsatishi mumkin.
+Fayl:
+
+mentor_ai/dashboard/views.py
+
+Tasdiqlovchi faktlar (Evidence):
+
+Dashboard javobi har bir o'qituvchi uchun 60 soniyaga keshlanadi.
+
+Nima uchun bu muhim:
+
+Baholash yakunlangach, o'qituvchi qisqa vaqt davomida eski statistikani ko'rib turishi mumkin.
+
+Tavsiya etiladigan tuzatish:
+
+MVP uchun buni shunday qoldiring yoki baholash/topshiriq o'zgarganda keshni tozalash (invalidate) mexanizmini kiriting.
+
+TUZATISHLARNING TAVSIYA ETILGAN KETMA-KETLIGI
+FRONTEND_URLdan foydalanib CORS'ni tuzating.
+
+AI xatolar sxemasini/mappingini to'g'rilang, to aks-aloqa UI'da to'g'ri ko'rinsin.
+
+Celery delay chaqiruvini transaction.on_commit ichiga o'tkazing.
+
+Yuklash statusi va qayta yuklash qoidalarini kuchaytiring va testlar qo'shing.
+
+Pytest test_flow.py faylini avtomatik test sifatida yig'ishini to me'yoqlang.
+
+DEBUG env toqnashuvini tuzating yoki uni hujjatlashtiring/nomini o'zgartiring.
+
+SimpleJWT blacklist ilovasini qo'shing yoki JWT sozlamalarini moslang.
+
+README buyruqlarini yangilang.
+
+Parol yaratishni randomdan secretsga o'tkazing.
+
+Kodirovka xatolarini va kod o'qilishini tozalang.
+
+TUZATISH KIRITILGANDAN SO'NG TAVSIYA ETILADIGAN BUYRUQLAR
+Backend:
+
+PowerShell
+$env:DEBUG='True'; .\venv\Scripts\python.exe manage.py check
+$env:DEBUG='True'; .\venv\Scripts\python.exe manage.py makemigrations --check --dry-run
+$env:DEBUG='True'; .\venv\Scripts\pytest.exe mentor_ai\tests -q
+$env:DEBUG='True'; .\venv\Scripts\pytest.exe -q
+Frontend:
+
+Bash
+cd frontend
+npm run lint
+npx tsc --noEmit --pretty false
+npm run build
+Brauzerda manual (qo'lda) smoke test:
+
+Backend'ni [http://127.0.0.1:8000](http://127.0.0.1:8000) manzilida ishga tushiring.
+
+Frontend'ni http://localhost:3000 manzilida ishga tushiring.
+
+O'qituvchi sifatida tizimga kiring.
+
+Guruh, talaba va topshiriq yarating.
+
+Talaba sifatida tizimga kiring.
+
+Rasm ko'rinishidagi uy vazifasini topshiring.
+
+AI baholash statusi o'zgarganini va o'qituvchi/talaba natijalar sahifasi foydali tushuntirishlarni ko'rsatayotganini tasdiqlang.

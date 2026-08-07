@@ -1,21 +1,32 @@
+"use client";
+
 import Link from "next/link";
-import { LayoutDashboard, Users, BookOpen } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, BookOpen, GraduationCap, BarChart3, Library } from "lucide-react";
 
 export function BottomNav() {
+  const pathname = usePathname();
+
+  const navItems = [
+    { name: "Home", href: "/", icon: LayoutDashboard },
+    { name: "Groups", href: "/groups", icon: Users },
+    { name: "Students", href: "/students", icon: GraduationCap },
+    { name: "Tasks", href: "/assignments", icon: BookOpen },
+    { name: "Library", href: "/library", icon: Library },
+    { name: "Analytics", href: "/results", icon: BarChart3 },
+  ];
+
   return (
     <nav className="md:hidden fixed bottom-0 w-full border-t bg-background flex items-center justify-around h-16 z-50 pb-safe">
-      <Link href="/" className="flex flex-col items-center p-2 text-muted-foreground hover:text-foreground">
-        <LayoutDashboard size={24} />
-        <span className="text-[10px] mt-1">Home</span>
-      </Link>
-      <Link href="/groups" className="flex flex-col items-center p-2 text-muted-foreground hover:text-foreground">
-        <Users size={24} />
-        <span className="text-[10px] mt-1">Groups</span>
-      </Link>
-      <Link href="/assignments" className="flex flex-col items-center p-2 text-muted-foreground hover:text-foreground">
-        <BookOpen size={24} />
-        <span className="text-[10px] mt-1">Tasks</span>
-      </Link>
+      {navItems.map((item) => {
+        const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+        return (
+          <Link key={item.href} href={item.href} className={`flex flex-col items-center justify-center w-full h-full p-1 transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+            <item.icon size={22} className={isActive ? 'stroke-[2.5px]' : ''} />
+            <span className="text-[10px] mt-1 font-medium">{item.name}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

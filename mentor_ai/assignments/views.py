@@ -238,7 +238,11 @@ class StudentSubmissionViewSet(viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if submission.status == Submission.Status.SUBMITTED:
+        if submission.status in (
+            Submission.Status.SUBMITTED,
+            Submission.Status.CHECKING,
+            Submission.Status.CHECKED,
+        ):
             return Response(
                 {"detail": "Siz allaqachon rasm yuborgansiz."},
                 status=status.HTTP_400_BAD_REQUEST,

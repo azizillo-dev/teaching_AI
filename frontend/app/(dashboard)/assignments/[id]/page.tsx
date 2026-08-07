@@ -95,7 +95,7 @@ export default function AssignmentDetailsPage() {
             </div>
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Avg Score</p>
-              <p className="text-2xl font-bold text-primary">{(assignment.average_score || 0).toFixed(1)}</p>
+              <p className="text-2xl font-bold text-primary">{Number(assignment.average_score || 0).toFixed(1)}</p>
             </div>
           </div>
         </div>
@@ -175,34 +175,20 @@ export default function AssignmentDetailsPage() {
               <p className="text-muted-foreground">All active students in this group have uploaded their homework.</p>
             </div>
           ) : (
-            <div className="bg-card border rounded-xl overflow-hidden">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-muted/50 border-b">
-                  <tr>
-                    <th className="px-6 py-4 font-medium text-muted-foreground">Student</th>
-                    <th className="px-6 py-4 font-medium text-muted-foreground">Email</th>
-                    <th className="px-6 py-4 font-medium text-muted-foreground">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {pendingStudents.map(student => (
-                    <tr key={student.id}>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold text-xs uppercase">
-                            {student.first_name[0]}{student.last_name[0]}
-                          </div>
-                          <span className="font-medium">{student.first_name} {student.last_name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">{student.email}</td>
-                      <td className="px-6 py-4 text-amber-600 font-medium flex items-center gap-1.5">
-                        <AlertCircle className="w-4 h-4" /> Pending
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="bg-card border rounded-xl overflow-hidden divide-y divide-border">
+              {pendingStudents.map(student => (
+                <div key={student.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0 pr-4">
+                    <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm uppercase shrink-0">
+                      {student.first_name?.[0] || ""}{student.last_name?.[0] || ""}
+                    </div>
+                    <span className="font-medium text-foreground truncate">{student.first_name || "Unknown"} {student.last_name || ""}</span>
+                  </div>
+                  <div className="text-amber-600 font-medium flex items-center gap-1.5 text-sm bg-amber-500/10 px-2.5 py-1 rounded-md shrink-0">
+                    <AlertCircle className="w-4 h-4" /> Pending
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

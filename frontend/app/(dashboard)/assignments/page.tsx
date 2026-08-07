@@ -50,14 +50,14 @@ export default function AssignmentsPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 pb-24 md:pb-8 h-full">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Assignments</h1>
-          <p className="text-muted-foreground mt-1">Create and manage homework</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">All Assignments</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage and grade homework</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="hidden md:flex">
+        <Button onClick={() => setIsCreateOpen(true)} className="w-full md:w-auto shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
-          New Assignment
+          Create Assignment
         </Button>
       </div>
 
@@ -78,7 +78,7 @@ export default function AssignmentsPage() {
               : 0;
 
             return (
-              <div key={assignment.id} className="group relative bg-card border rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+              <div key={assignment.id} className="group relative bg-card border border-border rounded-lg overflow-hidden hover:shadow-sm shadow-sm transition-shadow flex flex-col">
                 <div className="p-5 flex-1">
                   <div className="flex justify-between items-start mb-3">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${isClosed ? 'bg-muted text-muted-foreground' : 'bg-green-100 text-green-700'}`}>
@@ -111,7 +111,7 @@ export default function AssignmentsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <BarChart3 className="w-4 h-4" />
-                        <span>Avg Score: {(assignment.average_score || 0).toFixed(1)}</span>
+                        <span>Avg Score: {Number(assignment.average_score || 0).toFixed(1)}</span>
                       </div>
                     </div>
                   </Link>
@@ -129,15 +129,6 @@ export default function AssignmentsPage() {
           })}
         </div>
       )}
-
-      {/* Floating Action Button for Mobile */}
-      <button
-        onClick={() => setIsCreateOpen(true)}
-        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-transform z-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
-        aria-label="Create Assignment"
-      >
-        <Plus className="w-6 h-6" />
-      </button>
 
       <CreateAssignmentDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
       <EditAssignmentDialog isOpen={!!editAssignment} onClose={() => setEditAssignment(null)} assignment={editAssignment} />

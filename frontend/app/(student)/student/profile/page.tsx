@@ -9,15 +9,21 @@ export default function StudentProfilePage() {
   return (
     <div className="max-w-3xl mx-auto p-4 md:p-8 md:ml-64 pt-8">
       <h1 className="text-2xl font-bold mb-8">My Profile</h1>
-      <div className="bg-card border rounded-xl p-6 mb-8">
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Name</p>
-            <p className="font-medium text-lg">{user?.first_name} {user?.last_name}</p>
+      <div className="bg-card border rounded-xl overflow-hidden mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:p-5 border-b hover:bg-muted/30 transition-colors">
+          <div className="w-full sm:w-1/3 mb-1 sm:mb-0">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</span>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Username</p>
-            <p className="font-medium font-mono">{user?.email}</p>
+          <div className="w-full sm:w-2/3">
+            <p className="text-sm font-medium text-foreground">{user?.first_name} {user?.last_name}</p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:p-5 hover:bg-muted/30 transition-colors">
+          <div className="w-full sm:w-1/3 mb-1 sm:mb-0">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Username</span>
+          </div>
+          <div className="w-full sm:w-2/3 min-w-0">
+            <p className="text-sm font-medium text-foreground font-mono truncate">{user?.email}</p>
           </div>
         </div>
       </div>

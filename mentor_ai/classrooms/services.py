@@ -1,5 +1,6 @@
 import random
 import string
+import secrets
 
 from django.db import transaction
 
@@ -23,8 +24,8 @@ def _generate_student_email(first_name: str, last_name: str) -> str:
 
 def _generate_password(length: int = 10) -> str:
     """Xavfsiz tasodifiy parol generatsiya qilish."""
-    alphabet = string.ascii_letters + string.digits + string.punctuation
-    return "".join(random.choices(alphabet, k=length))
+    alphabet = string.ascii_letters + string.digits + "!@#$%&*"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 # ──────────────────────────────────────────────
@@ -119,3 +120,8 @@ def student_update(
     student_profile.save()
 
     return student_profile
+
+
+def student_delete(*, student_profile: StudentProfile) -> None:
+    user = student_profile.user
+    user.delete()
