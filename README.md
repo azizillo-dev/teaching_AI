@@ -81,19 +81,12 @@ The frontend will start at: `http://localhost:3000/`
 - PostgreSQL: `5432`
 - Redis: `6379`
 
+-- Slaommmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+
 ## Troubleshooting
 - **Celery errors on Windows**: If you get multiprocessing errors, ensure you run celery with `-P eventlet`. You may need to run `pip install eventlet`.
 - **Database connection failed**: Check your `.env` file for the correct `DB_USER` and `DB_PASSWORD`.
 - **API calls failing**: Ensure the backend is running on `http://127.0.0.1:8000` and `FRONTEND_URL` in `.env` is correctly pointing to `http://localhost:3000`.
 
 
-
-
-
-
-
-
-"""
-qales aka
-""""
 
