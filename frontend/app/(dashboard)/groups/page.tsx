@@ -19,6 +19,14 @@ export default function GroupsPage() {
   const [editGroup, setEditGroup] = useState<Group | null>(null);
   const [deleteGroup, setDeleteGroup] = useState<Group | null>(null);
 
+  const handleCreateGroup = () => {
+    if (groups && groups.length >= 3) {
+      alert("Free tarifida eng ko'pi bilan 3 ta guruh yaratish mumkin. Iltimos, limitni oshirish uchun obunani xarid qiling.");
+      return;
+    }
+    setIsCreateOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto p-4 md:p-8">
@@ -53,7 +61,7 @@ export default function GroupsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">All Groups</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage your classes and students</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="hidden md:flex shadow-sm">
+        <Button onClick={handleCreateGroup} className="hidden md:flex shadow-sm">
           <Plus className="w-4 h-4 mr-2" />
           New Group
         </Button>
@@ -65,7 +73,7 @@ export default function GroupsPage() {
           title="No groups yet"
           description="Create your first group to start assigning homework."
           actionLabel="Create Group"
-          onAction={() => setIsCreateOpen(true)}
+          onAction={handleCreateGroup}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -87,7 +95,7 @@ export default function GroupsPage() {
 
       {/* Floating Action Button for Mobile */}
       <button
-        onClick={() => setIsCreateOpen(true)}
+        onClick={handleCreateGroup}
         className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-transform z-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
         aria-label="Create New Group"
       >
