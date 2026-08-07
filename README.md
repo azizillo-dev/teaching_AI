@@ -1,4 +1,4 @@
-# Mentor AI MVP
+# Teacher AI MVP
 
 An intelligent homework evaluation and dashboard platform for teachers and students.
 

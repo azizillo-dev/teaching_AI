@@ -30,7 +30,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex flex-1 flex-col justify-center items-center bg-primary text-primary-foreground p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10 z-0" />
         <div className="z-10 text-center max-w-lg">
-          <h1 className="text-5xl font-extrabold tracking-tight mb-4">Mentor AI</h1>
+          <h1 className="text-5xl font-extrabold tracking-tight mb-4">Teacher AI</h1>
           <p className="text-xl opacity-90">AI-powered Homework Assistant</p>
           <div className="mt-12 opacity-80 border-t border-primary-foreground/20 pt-8">
             <p className="italic">&quot;Enhancing education through artificial intelligence.&quot;</p>

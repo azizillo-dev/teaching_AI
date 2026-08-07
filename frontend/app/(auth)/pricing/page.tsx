@@ -21,7 +21,7 @@ export default function PricingPage() {
             O'zingizga mos tarifni tanlang
           </h1>
           <p className="mt-4 text-xl text-muted-foreground">
-            Mentor AI imkoniyatlaridan to'liq foydalanish uchun ta'lim jarayoningizga mos keladigan rejani tanlang.
+            Teacher AI imkoniyatlaridan to'liq foydalanish uchun ta'lim jarayoningizga mos keladigan rejani tanlang.
           </p>
         </div>
 

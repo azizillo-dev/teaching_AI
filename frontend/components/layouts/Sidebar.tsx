@@ -20,8 +20,9 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r bg-card h-screen sticky top-0">
-      <div className="h-16 flex items-center px-6 border-b font-bold text-lg tracking-tight">
-        Mentor AI
+      <div className="h-16 flex items-center gap-3 px-6 border-b font-bold text-lg tracking-tight">
+        <img src="/logo.png" alt="Teacher AI" className="w-8 h-8 rounded-md object-cover" />
+        Teacher AI
       </div>
       <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto">
         {navItems.map((item) => {

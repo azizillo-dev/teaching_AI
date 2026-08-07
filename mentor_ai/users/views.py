@@ -61,8 +61,8 @@ def send_otp_email(user, verification_type):
         expires_at=timezone.now() + timedelta(minutes=10)
     )
 
-    subject = "Sizning tasdiqlash kodingiz (Mentor AI)"
-    message = f"Assalomu alaykum, {user.first_name}!\n\nSizning tasdiqlash kodingiz: {code}\nKod 10 daqiqa davomida amal qiladi.\n\nHurmat bilan,\nMentor AI jamoasi"
+    subject = "Sizning tasdiqlash kodingiz (Teacher AI)"
+    message = f"Assalomu alaykum, {user.first_name}!\n\nSizning tasdiqlash kodingiz: {code}\nKod 10 daqiqa davomida amal qiladi.\n\nHurmat bilan,\nTeacher AI jamoasi"
     send_mail(
         subject=subject,
         message=message,

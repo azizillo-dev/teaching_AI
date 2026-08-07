@@ -8,7 +8,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
-  title: "Mentor AI",
+  title: "Teacher AI",
   description: "The AI Teaching Assistant",
 };
 
