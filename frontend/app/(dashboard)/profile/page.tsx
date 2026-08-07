@@ -201,9 +201,9 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 min-w-0">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Email</label>
-                <p className="font-medium text-foreground">{profile.email}</p>
+                <p className="font-medium text-foreground break-all">{profile.email}</p>
               </div>
             </div>
           </div>
