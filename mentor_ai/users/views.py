@@ -44,7 +44,7 @@ class TeacherProfileView(APIView):
     def get(self, request, group_id):
         # Ensure the group exists and get its teacher
         group = get_object_or_404(Group, id=group_id)
-        teacher = group.teacher
+        teacher = group.owner
         
         serializer = UserProfileSerializer(teacher, context={'request': request})
         return Response(serializer.data)
