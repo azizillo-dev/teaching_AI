@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, BookOpen, GraduationCap, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, GraduationCap, BarChart3, Library } from "lucide-react";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -12,6 +12,7 @@ export function BottomNav() {
     { name: "Groups", href: "/groups", icon: Users },
     { name: "Students", href: "/students", icon: GraduationCap },
     { name: "Tasks", href: "/assignments", icon: BookOpen },
+    { name: "Library", href: "/library", icon: Library },
     { name: "Analytics", href: "/results", icon: BarChart3 },
   ];
 

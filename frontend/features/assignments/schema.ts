@@ -1,16 +1,24 @@
 import { z } from "zod";
 
 export const assignmentCreateSchema = z.object({
-  group: z.string().min(1, "Group is required"),
-  title: z.string().min(1, "Title is required").max(255),
-  description: z.string().min(1, "Description is required"),
-  deadline: z.string().min(1, "Deadline is required"),
+  group: z.string().min(1, "Guruh tanlanishi shart"),
+  title: z.string().min(1, "Sarlavha kiritilishi shart").max(255),
+  description: z.string().optional().default(""),
+  book: z.string().optional().nullable(),
+  page_start: z.coerce.number().min(1, "Boshlanish 1 dan kichik bo'lmaydi").optional().nullable(),
+  page_end: z.coerce.number().min(1, "Tugash 1 dan kichik bo'lmaydi").optional().nullable(),
+}).refine(data => {
+  const hasDesc = data.description && data.description.trim().length > 0;
+  const hasBook = data.book && data.page_start && data.page_end;
+  return hasDesc || hasBook;
+}, {
+  message: "Kamida tavsif yozing yoki kitob varaqlarini tanlang",
+  path: ["description"] // Attach error to description field by default
 });
 
 export const assignmentUpdateSchema = z.object({
   title: z.string().max(255).optional(),
-  description: z.string().optional(),
-  deadline: z.string().optional(),
+  description: z.string().optional().default(""),
   is_active: z.boolean().optional(),
 });
 
@@ -23,6 +31,11 @@ export interface Assignment {
   group_name: string;
   title: string;
   description: string;
+  book: string | null;
+  page_start: number | null;
+  page_end: number | null;
+  extracted_content: string;
+  extraction_status: "pending" | "done" | "failed";
   deadline: string;
   is_active: boolean;
   submitted_count: number;

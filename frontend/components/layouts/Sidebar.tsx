@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, BookOpen, GraduationCap, BarChart3, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, GraduationCap, BarChart3, Settings, LogOut, Library } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 
 export function Sidebar() {
@@ -13,6 +13,7 @@ export function Sidebar() {
     { name: "Groups", href: "/groups", icon: Users },
     { name: "Students", href: "/students", icon: GraduationCap },
     { name: "Assignments", href: "/assignments", icon: BookOpen },
+    { name: "Library", href: "/library", icon: Library },
     { name: "Results", href: "/results", icon: BarChart3 },
     { name: "Profile", href: "/profile", icon: Settings },
   ];

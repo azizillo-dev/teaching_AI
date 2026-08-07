@@ -5,6 +5,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { assignmentCreateSchema, assignmentUpdateSchema, type AssignmentCreateFormData, type AssignmentUpdateFormData, type Assignment } from "@/features/assignments/schema";
 import { useCreateAssignment, useUpdateAssignment, useDeleteAssignment } from "@/features/assignments/hooks";
 import { useGroups } from "@/features/groups/hooks";
+import { useBooks } from "@/features/library/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -36,8 +37,13 @@ function Modal({ isOpen, title, children }: ModalProps) {
 
 export function CreateAssignmentDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { data: groups } = useGroups();
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<AssignmentCreateFormData>({
+  const { data: books } = useBooks();
+  
+  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<AssignmentCreateFormData>({
     resolver: zodResolver(assignmentCreateSchema),
+    defaultValues: {
+      description: ""
+    }
   });
   const createMutation = useCreateAssignment();
 
@@ -45,13 +51,15 @@ export function CreateAssignmentDialog({ isOpen, onClose }: { isOpen: boolean; o
     if (!isOpen) reset();
   }, [isOpen, reset]);
 
+  const selectedBook = watch("book");
+
   const onSubmit = (data: AssignmentCreateFormData) => {
-    // Backend expects ISO string but datetime-local gives "YYYY-MM-DDThh:mm"
-    // We convert it to standard ISO string if necessary. Actually the browser string is close enough, 
-    // but better to create a new Date and convert to toISOString().
+    // If book is empty string, make it null/undefined
     const formattedData = {
       ...data,
-      deadline: new Date(data.deadline).toISOString()
+      book: data.book || undefined,
+      page_start: data.page_start || undefined,
+      page_end: data.page_end || undefined,
     };
     createMutation.mutate(formattedData, {
       onSuccess: () => onClose(),
@@ -82,19 +90,41 @@ export function CreateAssignmentDialog({ isOpen, onClose }: { isOpen: boolean; o
         </div>
         
         <div className="space-y-1.5">
+          <label className="text-sm font-medium">Kitobdan tanlash (Ixtiyoriy)</label>
+          <select 
+            {...register("book")}
+            className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.book ? "border-destructive" : ""}`}
+          >
+            <option value="">Kitob tanlanmagan</option>
+            {books?.map((b) => (
+              <option key={b.id} value={b.id}>{b.title} {b.total_pages ? `(${b.total_pages} bet)` : ""}</option>
+            ))}
+          </select>
+        </div>
+
+        {selectedBook && (
+          <div className="flex gap-3">
+            <div className="space-y-1.5 flex-1">
+              <label className="text-sm font-medium">Boshlanish beti</label>
+              <Input type="number" min="1" {...register("page_start")} className={errors.page_start ? "border-destructive" : ""} />
+              {errors.page_start && <p className="text-xs text-destructive">{errors.page_start.message}</p>}
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <label className="text-sm font-medium">Tugash beti</label>
+              <Input type="number" min="1" {...register("page_end")} className={errors.page_end ? "border-destructive" : ""} />
+              {errors.page_end && <p className="text-xs text-destructive">{errors.page_end.message}</p>}
+            </div>
+          </div>
+        )}
+        
+        <div className="space-y-1.5">
           <label className="text-sm font-medium">Tavsif (Qo'llanma)</label>
           <textarea 
-            placeholder="O'quvchilar uchun ko'rsatmalar..." 
+            placeholder="O'quvchilar uchun ko'rsatmalar yoki vazifa matni..." 
             {...register("description")} 
             className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.description ? "border-destructive" : ""}`}
           />
           {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Topshirish muddati</label>
-          <Input type="datetime-local" {...register("deadline")} className={errors.deadline ? "border-destructive" : ""} />
-          {errors.deadline && <p className="text-xs text-destructive">{errors.deadline.message}</p>}
         </div>
 
         <div className="pt-3 flex gap-3 border-t mt-4">
@@ -117,22 +147,16 @@ export function EditAssignmentDialog({ isOpen, onClose, assignment }: { isOpen: 
 
   useEffect(() => {
     if (assignment && isOpen) {
-      // slice(0, 16) formats ISO "2024-12-31T23:59:00Z" to "2024-12-31T23:59" for datetime-local
       reset({ 
         title: assignment.title, 
         description: assignment.description,
-        deadline: new Date(assignment.deadline).toISOString().slice(0, 16) 
       });
     }
   }, [assignment, isOpen, reset]);
 
   const onSubmit = (data: AssignmentUpdateFormData) => {
     if (!assignment) return;
-    const formattedData = {
-      ...data,
-      deadline: data.deadline ? new Date(data.deadline).toISOString() : undefined
-    };
-    updateMutation.mutate({ id: assignment.id, data: formattedData }, {
+    updateMutation.mutate({ id: assignment.id, data }, {
       onSuccess: () => onClose(),
     });
   };
@@ -154,12 +178,6 @@ export function EditAssignmentDialog({ isOpen, onClose, assignment }: { isOpen: 
             className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${errors.description ? "border-destructive" : ""}`}
           />
           {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Topshirish muddati</label>
-          <Input type="datetime-local" {...register("deadline")} className={errors.deadline ? "border-destructive" : ""} />
-          {errors.deadline && <p className="text-xs text-destructive">{errors.deadline.message}</p>}
         </div>
 
         <div className="pt-3 flex gap-3 border-t mt-4">
