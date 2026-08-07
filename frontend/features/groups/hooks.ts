@@ -40,3 +40,17 @@ export const useDeleteGroup = () => {
     },
   });
 };
+
+export const useJoinGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: GroupsService.joinGroup,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "student"] });
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+    onError: (error: any) => {
+      alert(error?.response?.data?.detail || error?.response?.data?.non_field_errors?.[0] || "Xatolik yuz berdi");
+    },
+  });
+};

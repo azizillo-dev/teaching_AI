@@ -24,17 +24,25 @@ class GroupOutputSerializer(serializers.ModelSerializer):
             "average_score",
             "created_at",
             "updated_at",
+            "join_code",
+            "join_password",
         )
 
 
 class GroupCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(required=False, default="")
+    join_password = serializers.CharField(max_length=128, min_length=4)
 
 
 class GroupUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255, required=False)
     description = serializers.CharField(required=False)
+
+
+class JoinGroupSerializer(serializers.Serializer):
+    join_code = serializers.CharField(max_length=10)
+    join_password = serializers.CharField(max_length=128)
 
 
 # ──────────────────────────────────────────────

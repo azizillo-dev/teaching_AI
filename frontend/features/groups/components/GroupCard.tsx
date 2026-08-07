@@ -8,10 +8,9 @@ interface GroupCardProps {
   onEdit: (group: Group) => void;
   onDelete: (group: Group) => void;
   onClick: (group: Group) => void;
-  onAddStudent: (group: Group) => void;
 }
 
-export function GroupCard({ group, onEdit, onDelete, onClick, onAddStudent }: GroupCardProps) {
+export function GroupCard({ group, onEdit, onDelete, onClick }: GroupCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -59,12 +58,7 @@ export function GroupCard({ group, onEdit, onDelete, onClick, onAddStudent }: Gr
           </Button>
           {menuOpen && (
             <div className="absolute right-0 top-full mt-1 w-40 bg-popover border shadow-lg rounded-md z-10 py-1 text-sm font-medium animate-in fade-in zoom-in-95">
-              <button
-                className="w-full text-left px-4 py-2 hover:bg-muted"
-                onClick={(e) => handleAction(e, () => onAddStudent(group))}
-              >
-                Add Student
-              </button>
+
               <button
                 className="w-full text-left px-4 py-2 hover:bg-muted"
                 onClick={(e) => handleAction(e, () => onEdit(group))}
@@ -102,10 +96,15 @@ export function GroupCard({ group, onEdit, onDelete, onClick, onAddStudent }: Gr
           <span className="font-medium">{Number(group.average_score || 0).toFixed(1)}</span>
         </div>
       </div>
-      <div className="mt-4 pt-4 border-t flex gap-2">
-         <Button variant="outline" size="sm" className="w-full text-xs font-medium" onClick={(e) => { e.stopPropagation(); onAddStudent(group); }}>
-            + Add Student
-         </Button>
+      <div className="mt-4 pt-3 border-t flex flex-col gap-1.5 text-sm bg-muted/40 p-3 rounded-md">
+        <div className="flex justify-between items-center">
+          <span className="text-muted-foreground text-xs font-medium">Guruh ID:</span>
+          <span className="font-mono font-bold tracking-widest bg-primary/10 text-primary px-2 py-0.5 rounded">{group.join_code}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-muted-foreground text-xs font-medium">Parol:</span>
+          <span className="font-mono bg-muted px-2 py-0.5 rounded">{group.join_password}</span>
+        </div>
       </div>
     </div>
   );

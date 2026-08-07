@@ -27,9 +27,11 @@ export default function RegisterPage() {
   const {
     register: registerForm,
     handleSubmit: handleRegisterSubmit,
+    watch,
     formState: { errors: registerErrors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { role: "student" },
   });
 
   const verifyCodeSchema = z.object({
@@ -85,6 +87,21 @@ export default function RegisterPage() {
               </div>
 
               <form onSubmit={handleRegisterSubmit(onRegister)} className="space-y-4">
+                <div className="space-y-3">
+                  <label className="text-sm font-medium leading-none">Siz kimsiz?</label>
+                  <div className="flex gap-4">
+                    <label className={`flex-1 flex items-center justify-center p-3 border rounded-md cursor-pointer transition-colors ${watch("role") === "student" ? "bg-primary/10 border-primary font-semibold text-primary" : "bg-muted/50 border-transparent text-muted-foreground hover:bg-muted"}`}>
+                      <input type="radio" value="student" className="hidden" {...registerForm("role")} />
+                      O'quvchi
+                    </label>
+                    <label className={`flex-1 flex items-center justify-center p-3 border rounded-md cursor-pointer transition-colors ${watch("role") === "teacher" ? "bg-primary/10 border-primary font-semibold text-primary" : "bg-muted/50 border-transparent text-muted-foreground hover:bg-muted"}`}>
+                      <input type="radio" value="teacher" className="hidden" {...registerForm("role")} />
+                      O'qituvchi
+                    </label>
+                  </div>
+                  {registerErrors.role && <p className="text-sm text-destructive">{registerErrors.role.message}</p>}
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium leading-none">Ism</label>

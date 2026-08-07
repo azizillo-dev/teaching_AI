@@ -44,10 +44,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
+    role = serializers.ChoiceField(choices=User.Role.choices, default=User.Role.STUDENT)
 
     class Meta:
         model = User
-        fields = ["email", "first_name", "last_name", "password"]
+        fields = ["email", "first_name", "last_name", "password", "role"]
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -55,8 +56,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             password=validated_data['password'],
+            role=validated_data.get('role', User.Role.STUDENT),
             is_active=False  # Must verify email first
         )
+        if user.role == User.Role.STUDENT:
+            from mentor_ai.classrooms.models import StudentProfile
+            StudentProfile.objects.create(user=user)
         return user
 
 

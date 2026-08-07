@@ -34,13 +34,13 @@ def _generate_password(length: int = 10) -> str:
 # ──────────────────────────────────────────────
 
 
-def group_create(*, owner: User, name: str, description: str = "") -> Group:
+def group_create(*, owner: User, name: str, description: str = "", join_password: str = "") -> Group:
     if owner.role == User.Role.TEACHER:
         # Hozircha hamma tekin tarifda bo'lgani uchun, 3 ta guruhdan ko'p ochish mumkin emas
         if owner.owned_groups.count() >= 3:
             raise ValidationError("Free tarifida eng ko'pi bilan 3 ta guruh yaratish mumkin. Iltimos, limitni oshirish uchun obunani xarid qiling.")
             
-    group = Group(owner=owner, name=name, description=description)
+    group = Group(owner=owner, name=name, description=description, join_password=join_password)
     group.full_clean()
     group.save()
     return group
@@ -64,6 +64,28 @@ def group_delete(*, group: Group) -> None:
 # ──────────────────────────────────────────────
 # Student Services
 # ──────────────────────────────────────────────
+
+def student_join_group(*, student: User, join_code: str, join_password: str) -> Group:
+    if student.role != User.Role.STUDENT:
+        raise ValidationError("Faqat o'quvchilar guruhga qo'shila oladi.")
+        
+    group = Group.objects.filter(join_code=join_code).first()
+    if not group:
+        raise ValidationError("Kiritilgan ID bo'yicha guruh topilmadi.")
+        
+    if group.join_password != join_password:
+        raise ValidationError("Guruh paroli xato.")
+        
+    profile = student.student_profile
+    
+    from mentor_ai.classrooms.models import GroupMembership
+    if GroupMembership.objects.filter(group=group, student_profile=profile).exists():
+        raise ValidationError("Siz allaqachon bu guruhga qo'shilgansiz.")
+        
+    GroupMembership.objects.create(group=group, student_profile=profile)
+    return group
+
+
 
 
 @transaction.atomic

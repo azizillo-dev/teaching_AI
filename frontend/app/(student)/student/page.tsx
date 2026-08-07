@@ -3,8 +3,55 @@
 import { useAuth } from "@/providers/AuthProvider";
 import { useEffect, useState } from "react";
 import { DashboardService, StudentDashboardData } from "@/services/dashboard.service";
-import { Trophy, Users, User as UserIcon, Award, Phone, BookOpen, UserRound } from "lucide-react";
+import { Trophy, Users, User as UserIcon, Award, Phone, BookOpen, UserRound, Loader2 } from "lucide-react";
 import { UsersService, UserProfile } from "@/services/users.service";
+import { useJoinGroup } from "@/features/groups/hooks";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+function JoinGroupModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { register, handleSubmit, reset } = useForm<{join_code: string, join_password: string}>();
+  const joinMutation = useJoinGroup();
+
+  useEffect(() => { if (!isOpen) reset(); }, [isOpen, reset]);
+
+  const onSubmit = (data: any) => {
+    joinMutation.mutate(data, {
+      onSuccess: () => {
+        onClose();
+        window.location.reload(); 
+      }
+    });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 duration-200 p-4">
+      <div className="w-full max-w-md bg-background border rounded-lg p-6 shadow-2xl animate-in zoom-in-95">
+        <h2 className="text-lg font-bold mb-5">Guruhga qo'shilish</h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Guruh ID</label>
+            <Input placeholder="6 xonali raqam" {...register("join_code", { required: true })} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Parol</label>
+            <Input placeholder="Guruh paroli" type="password" {...register("join_password", { required: true })} />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+            <Button type="button" variant="ghost" onClick={onClose} disabled={joinMutation.isPending}>Bekor qilish</Button>
+            <Button type="submit" disabled={joinMutation.isPending}>
+              {joinMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Qo'shilish
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentHomePage() {
   const { user } = useAuth();
@@ -13,6 +60,7 @@ export default function StudentHomePage() {
 
   const [teacherProfile, setTeacherProfile] = useState<UserProfile | null>(null);
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   useEffect(() => {
     DashboardService.getStudentDashboard()
@@ -42,9 +90,12 @@ export default function StudentHomePage() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 md:p-8 md:ml-64 pt-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Welcome back, {user?.first_name}!</h1>
-        <p className="text-muted-foreground mt-1">Here is an overview of your progress.</p>
+      <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Welcome back, {user?.first_name}!</h1>
+          <p className="text-muted-foreground mt-1">Here is an overview of your progress.</p>
+        </div>
+        <Button onClick={() => setIsJoinModalOpen(true)}>+ Guruhga qo'shilish</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,6 +238,7 @@ export default function StudentHomePage() {
           </div>
         </div>
       )}
+      <JoinGroupModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
     </div>
   );
 }

@@ -10,6 +10,7 @@ export const registerSchema = z.object({
   last_name: z.string().min(2, { message: "Familiya kamida 2 ta harfdan iborat bo'lishi kerak." }),
   email: z.string().email({ message: "Yaroqli elektron pochta manzilini kiriting." }),
   password: z.string().min(6, { message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak." }),
+  role: z.enum(["teacher", "student"], { required_error: "Rolni tanlang." }).default("student"),
 });
 
 export const verifyEmailSchema = z.object({

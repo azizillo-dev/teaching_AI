@@ -13,6 +13,8 @@ class Group(BaseModel):
     )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, default="")
+    join_code = models.CharField(max_length=10, unique=True, null=True, blank=True)
+    join_password = models.CharField(max_length=128, blank=True, default="")
 
     class Meta:
         verbose_name = "Group"
@@ -24,6 +26,16 @@ class Group(BaseModel):
                 name="unique_group_name_per_teacher",
             )
         ]
+
+    def save(self, *args, **kwargs):
+        if not self.join_code:
+            import random
+            while True:
+                code = str(random.randint(100000, 999999))
+                if not Group.objects.filter(join_code=code).exists():
+                    self.join_code = code
+                    break
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} ({self.owner.email})"
@@ -41,6 +53,8 @@ class StudentProfile(BaseModel):
         on_delete=models.CASCADE,
         related_name="created_students",
         limit_choices_to={"role": "teacher"},
+        null=True,
+        blank=True,
     )
     is_active = models.BooleanField(default=True)
 

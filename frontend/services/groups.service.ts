@@ -1,20 +1,24 @@
 import { api } from "@/lib/api";
-import { Group, GroupFormData } from "@/features/groups/schema";
+import { Group, GroupCreateFormData, GroupUpdateFormData } from "@/features/groups/schema";
 
 export const GroupsService = {
   getGroups: async (): Promise<Group[]> => {
     const response = await api.get<Group[]>("/classrooms/groups/");
     return response.data;
   },
-  createGroup: async (data: GroupFormData): Promise<Group> => {
+  createGroup: async (data: GroupCreateFormData): Promise<Group> => {
     const response = await api.post<Group>("/classrooms/groups/", data);
     return response.data;
   },
-  updateGroup: async ({ id, data }: { id: string; data: GroupFormData }): Promise<Group> => {
+  updateGroup: async ({ id, data }: { id: string; data: GroupUpdateFormData }): Promise<Group> => {
     const response = await api.patch<Group>(`/classrooms/groups/${id}/`, data);
     return response.data;
   },
   deleteGroup: async (id: string): Promise<void> => {
     await api.delete(`/classrooms/groups/${id}/`);
+  },
+  joinGroup: async (data: { join_code: string; join_password: string }): Promise<Group> => {
+    const response = await api.post<Group>("/classrooms/groups/join/", data);
+    return response.data;
   },
 };

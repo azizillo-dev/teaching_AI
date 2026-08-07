@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, AlertCircle } from "lucide-react";
-import { groupSchema, type GroupFormData, type Group } from "@/features/groups/schema";
+import { groupCreateSchema, groupUpdateSchema, type GroupCreateFormData, type GroupUpdateFormData, type Group } from "@/features/groups/schema";
 import { useCreateGroup, useUpdateGroup, useDeleteGroup } from "@/features/groups/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,15 +34,15 @@ function Modal({ isOpen, title, children }: ModalProps) {
 }
 
 export function CreateGroupDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<GroupFormData>({
-    resolver: zodResolver(groupSchema),
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<GroupCreateFormData>({
+    resolver: zodResolver(groupCreateSchema),
   });
   const createMutation = useCreateGroup();
 
   useEffect(() => { if (!isOpen) reset(); }, [isOpen, reset]);
 
-  const onSubmit = (data: GroupFormData) => {
-    createMutation.mutate(data, {
+  const onSubmit = (data: GroupCreateFormData) => {
+    createMutation.mutate(data as any, {
       onSuccess: () => onClose(),
     });
   };
@@ -59,6 +59,11 @@ export function CreateGroupDialog({ isOpen, onClose }: { isOpen: boolean; onClos
           <label className="text-sm font-medium">Description (Optional)</label>
           <Input placeholder="Brief details about the group" {...register("description")} />
         </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Group Password</label>
+          <Input placeholder="Kamida 4 ta belgi" {...register("join_password")} className={errors.join_password ? "border-destructive" : ""} />
+          {errors.join_password && <p className="text-xs text-destructive">{errors.join_password.message}</p>}
+        </div>
         <div className="pt-4 flex items-center justify-end gap-3 border-t mt-6">
           <Button type="button" variant="ghost" onClick={onClose} disabled={createMutation.isPending}>Cancel</Button>
           <Button type="submit" disabled={createMutation.isPending}>
@@ -72,8 +77,8 @@ export function CreateGroupDialog({ isOpen, onClose }: { isOpen: boolean; onClos
 }
 
 export function EditGroupDialog({ isOpen, onClose, group }: { isOpen: boolean; onClose: () => void; group: Group | null }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<GroupFormData>({
-    resolver: zodResolver(groupSchema),
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<GroupUpdateFormData>({
+    resolver: zodResolver(groupUpdateSchema),
   });
   const updateMutation = useUpdateGroup();
 
@@ -83,7 +88,7 @@ export function EditGroupDialog({ isOpen, onClose, group }: { isOpen: boolean; o
     }
   }, [group, isOpen, reset]);
 
-  const onSubmit = (data: GroupFormData) => {
+  const onSubmit = (data: GroupUpdateFormData) => {
     if (!group) return;
     updateMutation.mutate({ id: group.id, data }, {
       onSuccess: () => onClose(),

@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from mentor_ai.classrooms.models import Group, StudentProfile
 from mentor_ai.classrooms.permissions import IsTeacher
@@ -18,6 +20,7 @@ from mentor_ai.classrooms.serializers import (
     StudentCreateSerializer,
     StudentOutputSerializer,
     StudentUpdateSerializer,
+    JoinGroupSerializer,
 )
 from mentor_ai.classrooms.services import (
     group_create,
@@ -26,6 +29,7 @@ from mentor_ai.classrooms.services import (
     student_create,
     student_update,
     student_delete,
+    student_join_group,
 )
 
 
@@ -175,3 +179,26 @@ class StudentViewSet(viewsets.ViewSet):
 
         student_delete(student_profile=student_profile)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class JoinGroupAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        input_serializer = JoinGroupSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+
+        try:
+            group = student_join_group(
+                student=request.user,
+                **input_serializer.validated_data,
+            )
+        except DjangoValidationError as exc:
+            return Response(
+                {"detail": exc.messages},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        output_serializer = GroupOutputSerializer(group)
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
+
