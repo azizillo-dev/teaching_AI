@@ -10,6 +10,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Application definition
@@ -24,6 +25,7 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "rest_framework_simplejwt",
+    "corsheaders",
     # Local
     "mentor_ai.core.apps.CoreConfig",
     "mentor_ai.users.apps.UsersConfig",
@@ -34,6 +36,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -151,6 +154,7 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "TOKEN_OBTAIN_SERIALIZER": "mentor_ai.users.serializers.CustomTokenObtainPairSerializer",
 }
 
 

@@ -45,7 +45,7 @@ export default function LoginPage() {
             <p className="text-muted-foreground mt-2">Enter your credentials to continue</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" suppressHydrationWarning>
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none">Email</label>
               <Input
