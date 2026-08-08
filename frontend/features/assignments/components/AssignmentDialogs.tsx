@@ -54,14 +54,30 @@ export function CreateAssignmentDialog({ isOpen, onClose }: { isOpen: boolean; o
   const selectedBook = watch("book");
 
   const onSubmit = (data: AssignmentCreateFormData) => {
-    // If book is empty string, make it null/undefined
-    const formattedData = {
-      ...data,
+    const payloadFields: any = {
+      group: data.group,
+      title: data.title,
+      description: data.description,
       book: data.book || undefined,
       page_start: data.page_start || undefined,
       page_end: data.page_end || undefined,
+      deadline: data.deadline || undefined,
     };
-    createMutation.mutate(formattedData, {
+
+    let payload: any = payloadFields;
+
+    if (data.image && data.image.length > 0) {
+      const formData = new FormData();
+      Object.keys(payloadFields).forEach(key => {
+        if (payloadFields[key] !== undefined) {
+          formData.append(key, payloadFields[key]);
+        }
+      });
+      formData.append('image', data.image[0]);
+      payload = formData;
+    }
+
+    createMutation.mutate(payload, {
       onSuccess: () => onClose(),
     });
   };
@@ -89,6 +105,18 @@ export function CreateAssignmentDialog({ isOpen, onClose }: { isOpen: boolean; o
           {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
         </div>
         
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Tugash muddati (Deadline) (Ixtiyoriy)</label>
+          <Input type="datetime-local" {...register("deadline")} className={errors.deadline ? "border-destructive" : ""} />
+          {errors.deadline && <p className="text-xs text-destructive">{errors.deadline.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Rasm orqali vazifa (Ixtiyoriy)</label>
+          <Input type="file" accept="image/*" {...register("image")} className={errors.image ? "border-destructive" : ""} />
+          {errors.image && <p className="text-xs text-destructive">{errors.image.message as string}</p>}
+        </div>
+
         <div className="space-y-1.5">
           <label className="text-sm font-medium">Kitobdan tanlash (Ixtiyoriy)</label>
           <select 

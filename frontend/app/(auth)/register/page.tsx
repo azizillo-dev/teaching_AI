@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/providers/AuthProvider";
 import { 
   registerSchema, 
   type RegisterFormData,
@@ -19,10 +20,9 @@ import Link from "next/link";
 export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState<"register" | "verify">("register");
-  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const registerMutation = useRegisterMutation();
-  const verifyMutation = useVerifyEmailMutation();
+  const { login } = useAuth();
 
   const {
     register: registerForm,
@@ -48,18 +48,13 @@ export default function RegisterPage() {
 
   const onRegister = (data: RegisterFormData) => {
     registerMutation.mutate(data, {
-      onSuccess: () => {
-        setRegisteredEmail(data.email);
-        setStep("verify");
+      onSuccess: (response: any) => {
+        if (response && response.access && response.refresh) {
+          login(response.access, response.refresh);
+        } else {
+          router.push("/login");
+        }
       },
-    });
-  };
-
-  const onVerify = (data: { code: string }) => {
-    verifyMutation.mutate({ code: data.code, email: registeredEmail }, {
-      onSuccess: () => {
-        router.push("/pricing");
-      }
     });
   };
 
@@ -172,47 +167,7 @@ export default function RegisterPage() {
             </>
           )}
 
-          {step === "verify" && (
-            <>
-              <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-bold tracking-tight">Emailni tasdiqlash</h2>
-                <p className="text-muted-foreground mt-2">
-                  <strong>{registeredEmail}</strong> manziliga tasdiqlash kodi yuborildi. Iltimos, kodni kiriting.
-                </p>
-              </div>
 
-              <form onSubmit={handleVerifySubmit(onVerify)} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">Tasdiqlash kodi</label>
-                  <Input
-                    type="text"
-                    maxLength={6}
-                    placeholder="123456"
-                    className={`text-center tracking-widest text-lg ${verifyErrors.code ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                    {...verifyForm("code")}
-                  />
-                  {verifyErrors.code && <p className="text-sm text-destructive">{verifyErrors.code.message}</p>}
-                </div>
-
-                {verifyMutation.isError && (
-                  <div className="p-3 bg-destructive/15 text-destructive text-sm rounded-md border border-destructive/20">
-                    Kod noto'g'ri yoki muddati tugagan.
-                  </div>
-                )}
-
-                <Button type="submit" className="w-full h-11 text-base font-medium" disabled={verifyMutation.isPending}>
-                  {verifyMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Kuting...
-                    </>
-                  ) : (
-                    "Tasdiqlash"
-                  )}
-                </Button>
-              </form>
-            </>
-          )}
 
         </div>
       </div>

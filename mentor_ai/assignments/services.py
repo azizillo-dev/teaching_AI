@@ -36,9 +36,11 @@ def assignment_create(
     group: Group,
     title: str,
     description: str = "",
+    image=None,
     book: Book | None = None,
     page_start: int | None = None,
     page_end: int | None = None,
+    deadline=None,
     created_by: User,
 ) -> Assignment:
     from mentor_ai.assignments.tasks import extract_assignment_content
@@ -55,12 +57,16 @@ def assignment_create(
             if not (1 <= page_start <= page_end):
                 raise ValidationError("Sahifalar oralig'i noto'g'ri.")
     
-    deadline = timezone.now() + timedelta(hours=48)
+    if deadline is None:
+        deadline = timezone.now() + timedelta(hours=48)
+    
+    _validate_deadline(deadline)
 
     assignment = Assignment(
         group=group,
         title=title,
         description=description,
+        image=image,
         book=book,
         page_start=page_start,
         page_end=page_end,
@@ -81,12 +87,19 @@ def assignment_update(
     assignment: Assignment,
     title: str | None = None,
     description: str | None = None,
+    image=None,
+    deadline=None,
     is_active: bool | None = None,
 ) -> Assignment:
     if title is not None:
         assignment.title = title
     if description is not None:
         assignment.description = description
+    if image is not None:
+        assignment.image = image
+    if deadline is not None:
+        _validate_deadline(deadline)
+        assignment.deadline = deadline
     if is_active is not None:
         assignment.is_active = is_active
 

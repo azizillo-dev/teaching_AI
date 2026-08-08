@@ -21,4 +21,7 @@ export const GroupsService = {
     const response = await api.post<Group>("/classrooms/groups/join/", data);
     return response.data;
   },
+  removeStudent: async ({ groupId, studentId }: { groupId: string; studentId: string }): Promise<void> => {
+    await api.post(`/classrooms/groups/${groupId}/remove-student/${studentId}/`);
+  },
 };

@@ -6,14 +6,27 @@ import { BarChart3, Users, Crown, Calendar, Trophy, Medal } from "lucide-react";
 import { DashboardService } from "@/services/dashboard.service";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function ResultsPage() {
+  const { user } = useAuth();
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data: teacherData, isLoading: isTeacherLoading, isError: isTeacherError, refetch: refetchTeacher } = useQuery({
     queryKey: ["teacher-analytics", selectedGroupId],
     queryFn: () => DashboardService.getTeacherAnalytics(selectedGroupId),
+    enabled: user?.role === "teacher"
   });
+
+  const { data: studentData, isLoading: isStudentLoading, isError: isStudentError, refetch: refetchStudent } = useQuery({
+    queryKey: ["student-dashboard"],
+    queryFn: () => DashboardService.getStudentDashboard(),
+    enabled: user?.role === "student"
+  });
+
+  const isLoading = user?.role === "student" ? isStudentLoading : isTeacherLoading;
+  const isError = user?.role === "student" ? isStudentError : isTeacherError;
+  const refetch = user?.role === "student" ? refetchStudent : refetchTeacher;
 
   if (isLoading) {
     return (
@@ -32,7 +45,7 @@ export default function ResultsPage() {
     );
   }
 
-  const topStudents = data?.top_students || [];
+  const topStudents = teacherData?.top_students || [];
   
   // Arrange top 3 for podium (2, 1, 3)
   const podiumOrder = [
@@ -49,14 +62,14 @@ export default function ResultsPage() {
           <p className="text-sm text-muted-foreground mt-1">O'quvchilarning o'zlashtirishini kuzatib boring</p>
         </div>
         
-        {data?.groups && data.groups.length > 0 && (
+        {user?.role === "teacher" && teacherData?.groups && teacherData.groups.length > 0 && (
           <div className="w-full md:w-64">
             <select 
               className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
-              value={selectedGroupId || data.selected_group_id || ""}
+              value={selectedGroupId || teacherData.selected_group_id || ""}
               onChange={(e) => setSelectedGroupId(e.target.value)}
             >
-              {data.groups.map(g => (
+              {teacherData.groups.map(g => (
                 <option key={g.id} value={g.id}>{g.name}</option>
               ))}
             </select>
@@ -64,7 +77,42 @@ export default function ResultsPage() {
         )}
       </div>
 
-      {!data?.selected_group_id ? (
+      {user?.role === "student" ? (
+        <div className="bg-card border rounded-xl overflow-hidden shadow-sm mt-6">
+          <div className="px-6 py-4 border-b bg-muted/50 flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-yellow-500" />
+            <h2 className="font-semibold text-lg">{studentData?.groups?.[0]?.name || "Guruh"} Reytingi</h2>
+          </div>
+          
+          {studentData?.leaderboard && studentData.leaderboard.length > 0 ? (
+            <div className="divide-y">
+              {studentData.leaderboard.map((studentItem, index) => (
+                <div 
+                  key={studentItem.student_id} 
+                  className={`px-6 py-4 flex items-center justify-between ${studentItem.is_me ? 'bg-primary/5' : ''}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 text-center font-bold text-muted-foreground">
+                      {index + 1}
+                    </div>
+                    <div className="font-medium flex items-center gap-2">
+                      {studentItem.full_name}
+                      {studentItem.is_me && <span className="text-[10px] uppercase bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-bold">Siz</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-lg">{Number(studentItem.average_score || 0).toFixed(1)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-muted-foreground">
+              Guruhda o'quvchilar yo'q yoki siz guruhga qo'shilmagansiz.
+            </div>
+          )}
+        </div>
+      ) : !teacherData?.selected_group_id ? (
         <EmptyState 
           icon={Users} 
           title="Guruh tanlanmagan" 
@@ -77,7 +125,7 @@ export default function ResultsPage() {
           <div className="col-span-1 lg:col-span-3 bg-card border border-border rounded-xl p-4 md:p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-yellow-500 shrink-0" />
-              <span>{data.selected_group_name} Top 3</span>
+              <span>{teacherData.selected_group_name} Top 3</span>
             </h2>
             
             {topStudents.length === 0 ? (
@@ -166,12 +214,12 @@ export default function ResultsPage() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="font-medium">Bajarganlar</span>
-                  <span className="font-bold text-green-600">{data.weekly_stats.completed}</span>
+                  <span className="font-bold text-green-600">{teacherData.weekly_stats.completed}</span>
                 </div>
                 <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-green-500 rounded-full" 
-                    style={{ width: `${data.weekly_stats.total > 0 ? (data.weekly_stats.completed / data.weekly_stats.total) * 100 : 0}%` }}
+                    style={{ width: `${teacherData.weekly_stats.total > 0 ? (teacherData.weekly_stats.completed / teacherData.weekly_stats.total) * 100 : 0}%` }}
                   />
                 </div>
               </div>
@@ -179,12 +227,12 @@ export default function ResultsPage() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="font-medium">Bajarmaganlar</span>
-                  <span className="font-bold text-red-500">{data.weekly_stats.not_completed}</span>
+                  <span className="font-bold text-red-500">{teacherData.weekly_stats.not_completed}</span>
                 </div>
                 <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-red-400 rounded-full" 
-                    style={{ width: `${data.weekly_stats.total > 0 ? (data.weekly_stats.not_completed / data.weekly_stats.total) * 100 : 0}%` }}
+                    style={{ width: `${teacherData.weekly_stats.total > 0 ? (teacherData.weekly_stats.not_completed / teacherData.weekly_stats.total) * 100 : 0}%` }}
                   />
                 </div>
               </div>
@@ -192,7 +240,7 @@ export default function ResultsPage() {
               <div className="pt-4 border-t border-border mt-4">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Umumiy kutilayotgan:</span>
-                  <span className="font-semibold text-foreground">{data.weekly_stats.total} ta vazifa</span>
+                  <span className="font-semibold text-foreground">{teacherData.weekly_stats.total} ta vazifa</span>
                 </div>
               </div>
             </div>
@@ -208,12 +256,12 @@ export default function ResultsPage() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="font-medium">Bajarganlar</span>
-                  <span className="font-bold text-green-600">{data.monthly_stats.completed}</span>
+                  <span className="font-bold text-green-600">{teacherData.monthly_stats.completed}</span>
                 </div>
                 <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-green-500 rounded-full" 
-                    style={{ width: `${data.monthly_stats.total > 0 ? (data.monthly_stats.completed / data.monthly_stats.total) * 100 : 0}%` }}
+                    style={{ width: `${teacherData.monthly_stats.total > 0 ? (teacherData.monthly_stats.completed / teacherData.monthly_stats.total) * 100 : 0}%` }}
                   />
                 </div>
               </div>
@@ -221,12 +269,12 @@ export default function ResultsPage() {
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="font-medium">Bajarmaganlar</span>
-                  <span className="font-bold text-red-500">{data.monthly_stats.not_completed}</span>
+                  <span className="font-bold text-red-500">{teacherData.monthly_stats.not_completed}</span>
                 </div>
                 <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-red-400 rounded-full" 
-                    style={{ width: `${data.monthly_stats.total > 0 ? (data.monthly_stats.not_completed / data.monthly_stats.total) * 100 : 0}%` }}
+                    style={{ width: `${teacherData.monthly_stats.total > 0 ? (teacherData.monthly_stats.not_completed / teacherData.monthly_stats.total) * 100 : 0}%` }}
                   />
                 </div>
               </div>
@@ -234,7 +282,7 @@ export default function ResultsPage() {
               <div className="pt-4 border-t border-border mt-4">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Umumiy kutilayotgan:</span>
-                  <span className="font-semibold text-foreground">{data.monthly_stats.total} ta vazifa</span>
+                  <span className="font-semibold text-foreground">{teacherData.monthly_stats.total} ta vazifa</span>
                 </div>
               </div>
             </div>

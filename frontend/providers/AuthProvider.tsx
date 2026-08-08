@@ -88,13 +88,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         router.push("/login");
       } else if (isPublicRoute && user && pathname !== "/pricing") {
         router.push(user.role === "student" ? "/student" : "/");
-      } else if (user) {
-        const isStudentPortal = pathname === "/student" || pathname.startsWith("/student/");
-        if (user.role === "student" && !isStudentPortal) {
-          router.push("/student");
-        } else if (user.role === "teacher" && isStudentPortal) {
-          router.push("/");
-        }
       }
     }
   }, [user, isLoading, pathname, router]);

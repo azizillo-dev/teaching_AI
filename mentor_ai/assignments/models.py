@@ -36,6 +36,12 @@ class Assignment(BaseModel):
         default=ExtractionStatus.PENDING,
     )
     
+    image = models.ImageField(
+        upload_to="assignments/",
+        null=True,
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png"])],
+    )
     deadline = models.DateTimeField()
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -54,12 +60,10 @@ class Assignment(BaseModel):
         super().clean()
         has_description = bool(self.description and self.description.strip())
         has_book = bool(self.book and self.page_start and self.page_end)
-        # Note: source_image check depends on if we add image fields here, but MVP logic says: 
-        # "source_image, description, book - kamida bittasi to'ldirilmagan bo'lsa ValidationError"
-        # Since source_image is not in the model right now (it might be added later), we just check description or book
+        has_image = bool(self.image)
         
-        if not (has_description or has_book):
-            raise ValidationError("Kamida tavsif yoki kitob sahifasini kiriting")
+        if not (has_description or has_book or has_image):
+            raise ValidationError("Kamida matn, rasm yoki kitob sahifasini kiriting")
 
         if has_book:
             if self.page_start < 1:

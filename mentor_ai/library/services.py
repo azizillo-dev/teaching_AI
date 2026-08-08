@@ -6,35 +6,42 @@ from mentor_ai.library.models import Book
 
 logger = logging.getLogger(__name__)
 
-def book_create(*, teacher, title: str, subject: str, pdf_file: UploadedFile) -> Book:
+def book_create(*, teacher, title: str, subject: str, file: UploadedFile) -> Book:
     book = Book.objects.create(
         teacher=teacher,
         title=title,
         subject=subject,
-        pdf_file=pdf_file,
+        file=file,
         status=Book.Status.PROCESSING
     )
     
-    try:
-        # Read the file to determine total_pages
-        # pdf_file is a Django File object
-        pdf_bytes = pdf_file.read()
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        book.total_pages = len(doc)
-        book.status = Book.Status.READY
-        book.save(update_fields=['total_pages', 'status'])
-        doc.close()
-    except Exception as e:
-        logger.error(f"Failed to open PDF for Book ID {book.id}: {e}")
-        book.status = Book.Status.FAILED
-        book.save(update_fields=['status'])
-        raise ValueError("PDF fayl buzilgan yoki o'qib bo'lmaydi")
+    file_extension = file.name.split('.')[-1].lower() if '.' in file.name else ''
     
-    # reset file pointer if needed by other components
-    pdf_file.seek(0)
+    if file_extension == 'pdf':
+        try:
+            pdf_bytes = file.read()
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+            book.total_pages = len(doc)
+            book.status = Book.Status.READY
+            book.save(update_fields=['total_pages', 'status'])
+            doc.close()
+        except Exception as e:
+            logger.error(f"Failed to open PDF for Book ID {book.id}: {e}")
+            book.status = Book.Status.FAILED
+            book.save(update_fields=['status'])
+            raise ValueError("PDF fayl buzilgan yoki o'qib bo'lmaydi")
+    else:
+        # For DOCX and other files, we don't extract total_pages
+        book.status = Book.Status.READY
+        book.save(update_fields=['status'])
+    
+    file.seek(0)
     return book
 
 def extract_pages_as_images(*, book: Book, page_start: int, page_end: int) -> list[bytes]:
+    if not book.file.name.lower().endswith('.pdf'):
+        raise ValueError("Sahifalarni ajratib olish faqat PDF fayllar uchun ishlaydi")
+        
     if not book.total_pages:
         raise ValueError("Kitob varaqalari soni aniqlanmagan")
         
@@ -43,14 +50,12 @@ def extract_pages_as_images(*, book: Book, page_start: int, page_end: int) -> li
     
     images_bytes = []
     try:
-        with book.pdf_file.open("rb") as f:
+        with book.file.open("rb") as f:
             pdf_bytes = f.read()
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
             
-            # fitz pages are 0-indexed
             for page_num in range(page_start - 1, page_end):
                 page = doc.load_page(page_num)
-                # Zoom for better quality
                 zoom = 2.0
                 mat = fitz.Matrix(zoom, zoom)
                 pix = page.get_pixmap(matrix=mat)

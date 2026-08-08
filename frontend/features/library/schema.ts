@@ -4,7 +4,7 @@ export interface Book {
   id: string;
   title: string;
   subject: string;
-  pdf_file: string;
+  file: string;
   total_pages: number | null;
   status: "processing" | "ready" | "failed";
   created_at: string;
@@ -13,7 +13,12 @@ export interface Book {
 export const bookUploadSchema = z.object({
   title: z.string().min(1, "Sarlavha kiritilishi shart"),
   subject: z.string().optional(),
-  pdf_file: z.any().refine((file) => file instanceof File, "Fayl yuklanishi shart"),
+  file: z.any().refine((val) => {
+    if (!val) return false;
+    if (val instanceof File) return true;
+    if (val instanceof FileList && val.length > 0) return true;
+    return false;
+  }, "Fayl yuklanishi shart"),
 });
 
 export type BookUploadFormData = z.infer<typeof bookUploadSchema>;

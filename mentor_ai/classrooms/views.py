@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -107,6 +108,31 @@ class GroupViewSet(viewsets.ViewSet):
             )
 
         group_delete(group=group)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="remove-student/(?P<student_id>[^/.]+)")
+    def remove_student(self, request, pk=None, student_id=None):
+        try:
+            group = group_get(pk=pk, owner=request.user)
+        except (Group.DoesNotExist, ValueError):
+            return Response(
+                {"detail": "Guruh topilmadi."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+            
+        from mentor_ai.classrooms.models import GroupMembership
+        membership = GroupMembership.objects.filter(
+            group=group,
+            student_profile__user_id=student_id
+        ).first()
+        
+        if not membership:
+            return Response(
+                {"detail": "Bu o'quvchi guruhda mavjud emas."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+            
+        membership.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

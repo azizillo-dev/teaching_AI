@@ -11,8 +11,17 @@ export const AssignmentsService = {
     const response = await api.get<Assignment>(`/assignments/teacher/assignments/${id}/`);
     return response.data;
   },
-  createAssignment: async (data: AssignmentCreateFormData): Promise<Assignment> => {
-    const response = await api.post<Assignment>("/assignments/teacher/assignments/", data);
+  createAssignment: async (data: AssignmentCreateFormData | FormData): Promise<Assignment> => {
+    let payload;
+    let headers;
+    if (data instanceof FormData) {
+      payload = data;
+      headers = { "Content-Type": "multipart/form-data" };
+    } else {
+      payload = data;
+      headers = { "Content-Type": "application/json" };
+    }
+    const response = await api.post<Assignment>("/assignments/teacher/assignments/", payload, { headers });
     return response.data;
   },
   updateAssignment: async ({ id, data }: { id: string; data: AssignmentUpdateFormData }): Promise<Assignment> => {
@@ -30,6 +39,10 @@ export const AssignmentsService = {
   // Student Endpoints
   getStudentAssignments: async (): Promise<Assignment[]> => {
     const response = await api.get<Assignment[]>("/assignments/student/assignments/");
+    return response.data;
+  },
+  getStudentAssignment: async (id: string): Promise<Assignment> => {
+    const response = await api.get<Assignment>(`/assignments/student/assignments/${id}/`);
     return response.data;
   },
   getStudentSubmissions: async (): Promise<Submission[]> => {

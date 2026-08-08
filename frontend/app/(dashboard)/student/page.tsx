@@ -1,9 +1,10 @@
 "use client";
+import Link from "next/link";
 
 import { useAuth } from "@/providers/AuthProvider";
 import { useEffect, useState } from "react";
 import { DashboardService, StudentDashboardData } from "@/services/dashboard.service";
-import { Trophy, Users, User as UserIcon, Award, Phone, BookOpen, UserRound, Loader2 } from "lucide-react";
+import { Trophy, Users, User as UserIcon, Award, Phone, BookOpen, UserRound, Loader2, Activity } from "lucide-react";
 import { UsersService, UserProfile } from "@/services/users.service";
 import { useJoinGroup } from "@/features/groups/hooks";
 import { useForm } from "react-hook-form";
@@ -66,8 +67,8 @@ export default function StudentHomePage() {
     DashboardService.getStudentDashboard()
       .then((dashboardData) => {
         setData(dashboardData);
-        if (dashboardData.group_id) {
-          UsersService.getTeacherProfile(dashboardData.group_id)
+        if (dashboardData.groups && dashboardData.groups.length > 0) {
+          UsersService.getTeacherProfile(dashboardData.groups[0].id)
             .then(setTeacherProfile)
             .catch(console.error);
         }
@@ -99,43 +100,71 @@ export default function StudentHomePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-card border rounded-xl p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <Users className="w-6 h-6" />
+        {data?.groups?.length ? (
+          data.groups.map(group => (
+            <div key={group.id} className="bg-card border rounded-xl p-5 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold line-clamp-1">{group.name}</p>
+                  <p className="text-sm text-muted-foreground font-medium flex items-center gap-1.5 mt-0.5">
+                    <UserIcon className="w-3.5 h-3.5" />
+                    {group.teacher_name}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-1 md:col-span-2 bg-card border border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center text-muted-foreground">
+            <Users className="w-12 h-12 mb-3 text-muted" />
+            <p className="font-medium text-foreground mb-1">Hech qanday guruhga qo'shilmagansiz</p>
+            <p className="text-sm mb-4">Ustozingizdan guruh parolini so'rang va tizimga kiriting.</p>
+            <Button onClick={() => setIsJoinModalOpen(true)} variant="outline" size="sm">+ Guruhga qo'shilish</Button>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground font-medium">Your Group</p>
-            <p className="text-lg font-bold line-clamp-1">{data?.group_name || "No Group Assigned"}</p>
+        )}
+      </div>
+      
+      {/* Overview Stats (Assignments & Ranking) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Link href="/assignments" className="bg-card border rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm hover:border-primary transition-colors cursor-pointer">
+          <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-2">
+            <Award className="w-5 h-5" />
           </div>
+          <p className="text-2xl font-bold">{data?.assignments?.pending?.length || 0}</p>
+          <p className="text-xs text-muted-foreground uppercase font-semibold">Yangi vazifalar</p>
+        </Link>
+        <Link href="/assignments" className="bg-card border rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm hover:border-primary transition-colors cursor-pointer">
+          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-2">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <p className="text-2xl font-bold">{data?.assignments?.submitted?.length || 0}</p>
+          <p className="text-xs text-muted-foreground uppercase font-semibold">Tekshirilmoqda</p>
+        </Link>
+        <div className="bg-card border rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-2">
+            <Trophy className="w-5 h-5" />
+          </div>
+          <p className="text-2xl font-bold">#{data?.my_rank || '-'}</p>
+          <p className="text-xs text-muted-foreground uppercase font-semibold">Sizning o'rningiz</p>
         </div>
-        <div 
-          className="bg-card border rounded-xl p-5 flex items-center gap-4 cursor-pointer hover:bg-muted/30 transition-colors"
-          onClick={() => {
-            if (teacherProfile) setIsTeacherModalOpen(true);
-          }}
-        >
-          <div className="w-12 h-12 rounded-full border bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 overflow-hidden font-bold">
-            {teacherProfile?.avatar ? (
-              <img src={teacherProfile.avatar.startsWith("http") || teacherProfile.avatar.startsWith("blob:") ? teacherProfile.avatar : `http://localhost:8000${teacherProfile.avatar}`} alt="Ustoz" className="w-full h-full object-cover" />
-            ) : teacherProfile ? (
-              <span>{teacherProfile.first_name[0]}{teacherProfile.last_name[0]}</span>
-            ) : (
-              <UserIcon className="w-6 h-6" />
-            )}
+        <div className="bg-card border rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-2">
+            <Activity className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground font-medium">Your Teacher</p>
-            <p className="text-lg font-bold line-clamp-1">{data?.teacher_name || "Unknown Teacher"}</p>
-          </div>
+          <p className="text-2xl font-bold flex items-center gap-1">
+            {data?.rank_change && data.rank_change > 0 ? '+' : ''}{data?.rank_change || 0}
+          </p>
+          <p className="text-xs text-muted-foreground uppercase font-semibold">O'zgarish</p>
         </div>
       </div>
-
-      {/* Removed the inline Teacher Profile render here */}
 
       <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 border-b bg-muted/50 flex items-center gap-2">
           <Trophy className="w-5 h-5 text-yellow-500" />
-          <h2 className="font-semibold text-lg">Group Leaderboard</h2>
+          <h2 className="font-semibold text-lg">Asosiy guruh reytingi</h2>
         </div>
         
         {data?.leaderboard && data.leaderboard.length > 0 ? (
@@ -167,6 +196,9 @@ export default function StudentHomePage() {
           </div>
         )}
       </div>
+      
+
+
       {/* Teacher Profile Modal */}
       {isTeacherModalOpen && teacherProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsTeacherModalOpen(false)}>

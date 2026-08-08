@@ -62,6 +62,14 @@ export const useStudentAssignments = () => {
   });
 };
 
+export const useStudentAssignment = (id: string) => {
+  return useQuery({
+    queryKey: ["student-assignments", id],
+    queryFn: () => AssignmentsService.getStudentAssignment(id),
+    enabled: !!id,
+  });
+};
+
 export const useStudentSubmissions = (pollInterval?: number) => {
   return useQuery({
     queryKey: ["student-submissions"],

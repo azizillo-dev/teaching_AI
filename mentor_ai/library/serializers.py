@@ -8,7 +8,7 @@ class BookSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "subject",
-            "pdf_file",
+            "file",
             "total_pages",
             "status",
             "created_at",

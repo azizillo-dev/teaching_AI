@@ -6,10 +6,10 @@ import { useAuth } from "@/providers/AuthProvider";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
-  const navItems = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  const baseNavItems = [
+    { name: "Dashboard", href: user?.role === "student" ? "/student" : "/", icon: LayoutDashboard },
     { name: "Groups", href: "/groups", icon: Users },
     { name: "Students", href: "/students", icon: GraduationCap },
     { name: "Assignments", href: "/assignments", icon: BookOpen },
@@ -18,10 +18,17 @@ export function Sidebar() {
     { name: "Profile", href: "/profile", icon: Settings },
   ];
 
+  const navItems = baseNavItems.filter(item => {
+    if (user?.role === "student" && (item.name === "Groups" || item.name === "Students")) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <aside className="hidden md:flex flex-col w-64 border-r bg-card h-screen sticky top-0">
       <div className="h-16 flex items-center gap-3 px-6 border-b font-bold text-lg tracking-tight">
-        <img src="/logo.png" alt="Teacher AI" className="w-8 h-8 rounded-md object-cover" />
+        <img src="/logo.png?v=2" alt="Teacher AI" className="w-10 h-10 object-contain" />
         Teacher AI
       </div>
       <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto">

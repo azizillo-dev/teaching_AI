@@ -8,11 +8,11 @@ from mentor_ai.library.selectors import book_list, book_get
 from mentor_ai.library.services import book_create
 
 class BookViewSet(viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, IsTeacher]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = BookSerializer
 
     def list(self, request):
-        books = book_list(teacher=request.user)
+        books = book_list(user=request.user)
         page = self.paginate_queryset(books)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -21,6 +21,9 @@ class BookViewSet(viewsets.GenericViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        if request.user.role != 'teacher':
+            return Response({"detail": "Faqat o'qituvchilar kitob yuklashi mumkin"}, status=status.HTTP_403_FORBIDDEN)
+            
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -29,13 +32,26 @@ class BookViewSet(viewsets.GenericViewSet):
                 teacher=request.user,
                 title=serializer.validated_data.get('title'),
                 subject=serializer.validated_data.get('subject', ''),
-                pdf_file=serializer.validated_data.get('pdf_file'),
+                file=serializer.validated_data.get('file'),
             )
             return Response(self.get_serializer(book).data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        book = book_get(pk=pk, teacher=request.user)
+        if request.user.role == 'teacher':
+            book = book_get(pk=pk, teacher=request.user)
+        else:
+            books = book_list(user=request.user)
+            book = books.filter(pk=pk).first()
+            if not book:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(book)
         return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        if request.user.role != 'teacher':
+            return Response({"detail": "Faqat o'qituvchilar o'chira oladi"}, status=status.HTTP_403_FORBIDDEN)
+        book = book_get(pk=pk, teacher=request.user)
+        book.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

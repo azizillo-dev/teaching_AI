@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 
-DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 CORS_ALLOW_ALL_ORIGINS = True
@@ -114,13 +114,13 @@ USE_TZ = True
 
 # Static files
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # Media files
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
@@ -193,4 +193,4 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Gemini AI Configuration
 
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
-GEMINI_MODEL_NAME = config("GEMINI_MODEL_NAME", default="gemini-3-flash")
+GEMINI_MODEL_NAME = config("GEMINI_MODEL_NAME", default="gemini-3.5-flash")

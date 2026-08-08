@@ -79,8 +79,18 @@ class RegisterAPIView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            send_otp_email(user, EmailVerification.VerificationType.REGISTER)
-            return Response({"detail": "User created. Please verify your email."}, status=status.HTTP_201_CREATED)
+            
+            # Activate user and start 14-day free trial immediately
+            user.is_active = True
+            user.plan_expires_at = timezone.now() + timedelta(days=14)
+            user.save()
+            
+            refresh = CustomTokenObtainPairSerializer.get_token(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "detail": "User created successfully."
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

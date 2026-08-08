@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Plus, Users } from "lucide-react";
 import { useGroups } from "@/features/groups/hooks";
 import { GroupCard } from "@/features/groups/components/GroupCard";
-import { CreateGroupDialog, EditGroupDialog, DeleteGroupDialog } from "@/features/groups/components/GroupDialogs";
+import { CreateGroupDialog, EditGroupDialog, DeleteGroupDialog, GroupDetailsDialog } from "@/features/groups/components/GroupDialogs";
 import { Button } from "@/components/ui/button";
 import { Group } from "@/features/groups/schema";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -16,6 +16,7 @@ export default function GroupsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editGroup, setEditGroup] = useState<Group | null>(null);
   const [deleteGroup, setDeleteGroup] = useState<Group | null>(null);
+  const [detailsGroup, setDetailsGroup] = useState<Group | null>(null);
 
   const handleCreateGroup = () => {
     if (groups && groups.length >= 3) {
@@ -82,8 +83,7 @@ export default function GroupsPage() {
               onEdit={(g) => setEditGroup(g)}
               onDelete={(g) => setDeleteGroup(g)}
               onClick={(g) => {
-                // Navigate to group details in the future
-                console.log("Navigating to group", g.id);
+                setDetailsGroup(g);
               }}
             />
           ))}
@@ -102,6 +102,7 @@ export default function GroupsPage() {
       <CreateGroupDialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
       <EditGroupDialog isOpen={!!editGroup} onClose={() => setEditGroup(null)} group={editGroup} />
       <DeleteGroupDialog isOpen={!!deleteGroup} onClose={() => setDeleteGroup(null)} group={deleteGroup} />
+      <GroupDetailsDialog isOpen={!!detailsGroup} onClose={() => setDetailsGroup(null)} group={detailsGroup} />
     </div>
   );
 }

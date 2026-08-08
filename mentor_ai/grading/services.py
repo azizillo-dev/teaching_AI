@@ -32,8 +32,22 @@ class GeminiGradingService:
         assignment = submission.assignment
         prompt_text = build_grading_prompt(assignment)
 
-        # Build contents (Prompt text + Images)
+        # Build contents (Prompt text + Teacher Assignment Image + Student Images)
         contents = [prompt_text]
+        
+        # If the assignment itself has an image, add it as context
+        if assignment.image:
+            with assignment.image.open("rb") as f:
+                assignment_image_bytes = f.read()
+                ext = assignment.image.name.split(".")[-1].lower()
+                mime_type = "image/jpeg" if ext in ["jpg", "jpeg"] else "image/png"
+                contents.append(
+                    types.Part.from_bytes(
+                        data=assignment_image_bytes,
+                        mime_type=mime_type,
+                    )
+                )
+
         for img_obj in images:
             # Reopen the file to ensure we can read its bytes
             with img_obj.image.open("rb") as f:

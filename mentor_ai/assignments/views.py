@@ -69,8 +69,12 @@ class TeacherAssignmentViewSet(viewsets.ViewSet):
             assignment = assignment_create(
                 group=group,
                 title=input_serializer.validated_data["title"],
-                description=input_serializer.validated_data["description"],
-                deadline=input_serializer.validated_data["deadline"],
+                description=input_serializer.validated_data.get("description", ""),
+                image=input_serializer.validated_data.get("image"),
+                book=input_serializer.validated_data.get("book"),
+                page_start=input_serializer.validated_data.get("page_start"),
+                page_end=input_serializer.validated_data.get("page_end"),
+                deadline=input_serializer.validated_data.get("deadline"),
                 created_by=request.user,
             )
         except DjangoValidationError as exc:

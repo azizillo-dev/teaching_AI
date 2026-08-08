@@ -23,3 +23,7 @@ export const uploadBook = async (formData: FormData): Promise<Book> => {
   });
   return data;
 };
+
+export const deleteBook = async (id: string): Promise<void> => {
+  await api.delete(`/library/books/${id}/`);
+};

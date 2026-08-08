@@ -15,6 +15,9 @@ Tavsif: {assignment.description}
     if assignment.book and assignment.extraction_status == 'done' and assignment.extracted_content:
         prompt += f"\nQuyidagi masalalar ro'yxatidan o'quvchi ishlagan:\n{assignment.extracted_content}\n"
 
+    if assignment.image:
+        prompt += "\nUshbu vazifaga o'qituvchi tomonidan rasm (topshiriq) ilova qilingan. Sizga berilgan rasmlarning BIRINCHISI - bu topshiriq sharti (o'qituvchi bergan rasm). Qolgan rasmlar esa o'quvchining javoblari hisoblanadi.\n"
+
     prompt += """
 Sizga o'quvchi tomonidan yuborilgan uy vazifasi rasmlari beriladi.
 Rasmlarni diqqat bilan tahlil qiling va vazifa shartlariga qanchalik to'g'ri kelishiga qarab 0 dan 100 gacha bo'lgan oraliqda baholang.

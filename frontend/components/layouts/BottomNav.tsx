@@ -4,17 +4,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, BookOpen, GraduationCap, BarChart3, Library } from "lucide-react";
 
+import { useAuth } from "@/providers/AuthProvider";
+
 export function BottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const navItems = [
-    { name: "Home", href: "/", icon: LayoutDashboard },
+    { name: "Home", href: user?.role === "student" ? "/student" : "/", icon: LayoutDashboard },
     { name: "Groups", href: "/groups", icon: Users },
     { name: "Students", href: "/students", icon: GraduationCap },
     { name: "Tasks", href: "/assignments", icon: BookOpen },
     { name: "Library", href: "/library", icon: Library },
     { name: "Analytics", href: "/results", icon: BarChart3 },
-  ];
+  ].filter(item => {
+    // If student, hide Groups and Students
+    if (user?.role === "student" && (item.name === "Groups" || item.name === "Students")) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <nav className="md:hidden fixed bottom-0 w-full border-t bg-background flex items-center justify-around h-16 z-50 pb-safe">

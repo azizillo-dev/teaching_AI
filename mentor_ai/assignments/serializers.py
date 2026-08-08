@@ -22,6 +22,7 @@ class AssignmentReadSerializer(serializers.ModelSerializer):
             "group_name",
             "title",
             "description",
+            "image",
             "book",
             "page_start",
             "page_end",
@@ -35,21 +36,25 @@ class AssignmentReadSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at", "deadline", "extracted_content", "extraction_status")
+        read_only_fields = ("id", "created_at", "updated_at", "extracted_content", "extraction_status")
 
 
 class AssignmentCreateSerializer(serializers.Serializer):
     group = serializers.UUIDField()
     title = serializers.CharField(max_length=255)
     description = serializers.CharField(required=False, allow_blank=True)
+    image = serializers.ImageField(required=False, allow_null=True)
     book = serializers.UUIDField(required=False, allow_null=True)
     page_start = serializers.IntegerField(required=False, allow_null=True)
     page_end = serializers.IntegerField(required=False, allow_null=True)
+    deadline = serializers.DateTimeField()
 
 
 class AssignmentUpdateSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=255, required=False)
     description = serializers.CharField(required=False, allow_blank=True)
+    image = serializers.ImageField(required=False, allow_null=True)
+    deadline = serializers.DateTimeField(required=False)
     is_active = serializers.BooleanField(required=False)
 
 

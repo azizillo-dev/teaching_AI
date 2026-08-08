@@ -57,7 +57,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             last_name=validated_data['last_name'],
             password=validated_data['password'],
             role=validated_data.get('role', User.Role.STUDENT),
-            is_active=False  # Must verify email first
+            is_active=True  # Auto-activate for now
         )
         if user.role == User.Role.STUDENT:
             from mentor_ai.classrooms.models import StudentProfile

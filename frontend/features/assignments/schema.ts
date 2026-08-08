@@ -7,12 +7,15 @@ export const assignmentCreateSchema = z.object({
   book: z.string().optional().nullable(),
   page_start: z.coerce.number().min(1, "Boshlanish 1 dan kichik bo'lmaydi").optional().nullable(),
   page_end: z.coerce.number().min(1, "Tugash 1 dan kichik bo'lmaydi").optional().nullable(),
+  deadline: z.string().optional(),
+  image: z.any().optional(),
 }).refine(data => {
   const hasDesc = data.description && data.description.trim().length > 0;
   const hasBook = data.book && data.page_start && data.page_end;
-  return hasDesc || hasBook;
+  const hasImage = data.image && data.image.length > 0;
+  return hasDesc || hasBook || hasImage;
 }, {
-  message: "Kamida tavsif yozing yoki kitob varaqlarini tanlang",
+  message: "Kamida tavsif yozing, rasm yuklang yoki kitob varaqlarini tanlang",
   path: ["description"] // Attach error to description field by default
 });
 
@@ -20,6 +23,7 @@ export const assignmentUpdateSchema = z.object({
   title: z.string().max(255).optional(),
   description: z.string().optional().default(""),
   is_active: z.boolean().optional(),
+  deadline: z.string().optional(),
 });
 
 export type AssignmentCreateFormData = z.infer<typeof assignmentCreateSchema>;
@@ -34,6 +38,7 @@ export interface Assignment {
   book: string | null;
   page_start: number | null;
   page_end: number | null;
+  image: string | null;
   extracted_content: string;
   extraction_status: "pending" | "done" | "failed";
   deadline: string;

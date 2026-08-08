@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, AlertCircle } from "lucide-react";
 import { groupCreateSchema, groupUpdateSchema, type GroupCreateFormData, type GroupUpdateFormData, type Group } from "@/features/groups/schema";
-import { useCreateGroup, useUpdateGroup, useDeleteGroup } from "@/features/groups/hooks";
+import { useCreateGroup, useUpdateGroup, useDeleteGroup, useRemoveStudent } from "@/features/groups/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -145,6 +145,80 @@ export function DeleteGroupDialog({ isOpen, onClose, group }: { isOpen: boolean;
             {deleteMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Delete Group
           </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+export function GroupDetailsDialog({ isOpen, onClose, group }: { isOpen: boolean; onClose: () => void; group: Group | null }) {
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const removeStudentMutation = useRemoveStudent();
+
+  useEffect(() => {
+    if (isOpen && group) {
+      setIsLoading(true);
+      import("@/services/dashboard.service").then(({ DashboardService }) => {
+        DashboardService.getTeacherAnalytics(group.id).then(data => {
+          setAnalyticsData(data);
+          setIsLoading(false);
+        }).catch(console.error);
+      });
+    }
+  }, [isOpen, group]);
+
+  if (!isOpen || !group) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`${group.name} - Leaderboard & Students`}>
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
+        ) : (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-sm text-muted-foreground">O'quvchilar reytingi</h3>
+            {analyticsData?.top_students?.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Bu guruhda hali o'quvchilar yo'q.</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {analyticsData?.top_students?.map((student: any, index: number) => (
+                  <div key={student.student_id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-xs text-primary">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{student.full_name}</p>
+                        <p className="text-xs text-muted-foreground">Avg: {student.average_score}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      disabled={removeStudentMutation.isPending}
+                      onClick={() => {
+                        if (confirm(`Rostdan ham ${student.full_name} ni guruhdan o'chirmoqchimisiz?`)) {
+                          removeStudentMutation.mutate({ groupId: group.id, studentId: student.student_id }, {
+                            onSuccess: () => {
+                              import("@/services/dashboard.service").then(({ DashboardService }) => {
+                                DashboardService.getTeacherAnalytics(group.id).then(setAnalyticsData);
+                              });
+                            }
+                          });
+                        }
+                      }}
+                    >
+                      O'chirish
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <div className="pt-4 flex items-center justify-end border-t mt-6">
+          <Button type="button" variant="ghost" onClick={onClose}>Yopish</Button>
         </div>
       </div>
     </Modal>

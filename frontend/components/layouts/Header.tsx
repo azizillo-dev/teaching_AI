@@ -36,7 +36,7 @@ export function Header() {
     <header className="h-16 border-b flex items-center justify-between px-6 bg-background sticky top-0 z-40">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 md:hidden">
-          <img src="/logo.png" alt="Teacher AI" className="w-6 h-6 rounded-md object-cover" />
+          <img src="/logo.png?v=2" alt="Teacher AI" className="w-8 h-8 object-contain" />
           <h1 className="text-xl font-bold tracking-tight">Teacher AI</h1>
         </div>
         <h2 className="hidden md:block text-lg font-semibold tracking-tight">{getPageTitle()}</h2>

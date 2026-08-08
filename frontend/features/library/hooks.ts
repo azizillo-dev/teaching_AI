@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getBooks, uploadBook } from "./api";
+import { getBooks, uploadBook, deleteBook } from "./api";
 import { Book } from "./schema";
 
 export const useBooks = () => {
@@ -20,6 +20,17 @@ export const useUploadBook = () => {
     },
     onError: (error: any) => {
       alert(error?.response?.data?.detail || "Kitob yuklashda xatolik yuz berdi");
+    },
+  });
+};
+
+export const useDeleteBook = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteBook,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["books"] });
     },
   });
 };

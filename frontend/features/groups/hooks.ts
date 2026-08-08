@@ -54,3 +54,17 @@ export const useJoinGroup = () => {
     },
   });
 };
+
+export const useRemoveStudent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: GroupsService.removeStudent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    },
+    onError: (error: any) => {
+      alert(error?.response?.data?.detail || "O'quvchini o'chirishda xatolik yuz berdi");
+    },
+  });
+};

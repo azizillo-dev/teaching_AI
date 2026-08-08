@@ -165,25 +165,72 @@ def get_teacher_dashboard_data(*, teacher: User) -> dict:
         "recent_activity": recent_activity,
     }
 
+from mentor_ai.library.models import Book
+
 def get_student_dashboard_data(*, student: User) -> dict:
     try:
         profile = student.student_profile
     except StudentProfile.DoesNotExist:
         return {}
 
-    membership = profile.memberships.first()
-    if not membership:
+    memberships = profile.memberships.select_related("group__owner")
+    if not memberships.exists():
         teacher = profile.created_by
         return {
-            "group_id": None,
-            "group_name": None,
-            "teacher_name": f"{teacher.first_name} {teacher.last_name}".strip() or teacher.email,
+            "groups": [],
+            "assignments": {"pending": [], "submitted": [], "completed": []},
+            "library": [],
             "leaderboard": [],
+            "my_rank": 0,
+            "rank_change": 0,
         }
 
-    group = membership.group
-    teacher = group.owner
+    groups = []
+    teachers = set()
+    for membership in memberships:
+        groups.append({
+            "id": str(membership.group.id),
+            "name": membership.group.name,
+            "teacher_name": f"{membership.group.owner.first_name} {membership.group.owner.last_name}".strip() or membership.group.owner.email,
+        })
+        teachers.add(membership.group.owner)
 
+    # Assignments
+    assignments = Assignment.objects.filter(group__in=[m.group for m in memberships], is_active=True).order_by("deadline")
+    pending = []
+    submitted = []
+    completed = []
+    
+    for a in assignments:
+        sub = a.submissions.filter(student=student).first()
+        item = {
+            "id": str(a.id),
+            "title": a.title,
+            "deadline": a.deadline.isoformat(),
+            "group_name": a.group.name
+        }
+        if not sub or sub.status == Submission.Status.PENDING:
+            pending.append(item)
+        elif sub.status in [Submission.Status.SUBMITTED, Submission.Status.CHECKING]:
+            submitted.append(item)
+        elif sub.status == Submission.Status.CHECKED:
+            item["score"] = sub.check_result.score if hasattr(sub, "check_result") and sub.check_result else 0
+            completed.append(item)
+
+    # Library
+    books = Book.objects.filter(teacher__in=teachers)
+    library = [
+        {
+            "id": str(b.id),
+            "title": b.title,
+            "subject": b.subject,
+            "teacher_name": f"{b.teacher.first_name} {b.teacher.last_name}".strip() or b.teacher.email
+        }
+        for b in books
+    ]
+
+    # Leaderboard (use first group for now)
+    group = memberships.first().group
     group_students = (
         User.objects.filter(student_profile__memberships__group=group)
         .annotate(
@@ -192,21 +239,30 @@ def get_student_dashboard_data(*, student: User) -> dict:
         .order_by("-average_score")
     )
 
-    leaderboard = [
-        {
+    leaderboard = []
+    my_rank = 0
+    for i, s in enumerate(group_students):
+        is_me = s.id == student.id
+        if is_me:
+            my_rank = i + 1
+        leaderboard.append({
             "student_id": str(s.id),
             "full_name": f"{s.first_name} {s.last_name}".strip() or s.email,
             "average_score": round(float(s.average_score), 2),
-            "is_me": s.id == student.id,
-        }
-        for s in group_students
-    ]
+            "is_me": is_me,
+        })
 
     return {
-        "group_id": str(group.id),
-        "group_name": group.name,
-        "teacher_name": f"{teacher.first_name} {teacher.last_name}".strip() or teacher.email,
+        "groups": groups,
+        "assignments": {
+            "pending": pending,
+            "submitted": submitted,
+            "completed": completed
+        },
+        "library": library,
         "leaderboard": leaderboard,
+        "my_rank": my_rank,
+        "rank_change": 0, # Since we don't have historical data, return 0 for now
     }
 
 def get_teacher_analytics_data(*, teacher: User, group_id: str | None = None) -> dict:
@@ -226,7 +282,7 @@ def get_teacher_analytics_data(*, teacher: User, group_id: str | None = None) ->
             is_active=True
         ).annotate(
             average_score=Coalesce(Avg("submissions__check_result__score", filter=Q(submissions__assignment__group=selected_group)), 0.0)
-        ).order_by("-average_score")[:3]
+        ).order_by("-average_score")
         
         top_students = [
             {

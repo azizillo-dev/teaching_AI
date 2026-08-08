@@ -17,7 +17,7 @@ class Book(BaseModel):
         related_name="books",
         limit_choices_to={"role": "teacher"},
     )
-    pdf_file = models.FileField(upload_to="books/")
+    file = models.FileField(upload_to="books/")
     total_pages = models.IntegerField(null=True, blank=True)
     status = models.CharField(
         max_length=20,

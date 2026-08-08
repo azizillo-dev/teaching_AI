@@ -1,15 +1,30 @@
 import { api } from "@/lib/api";
 
 export interface StudentDashboardData {
-  group_id: string | null;
-  group_name: string | null;
-  teacher_name: string;
+  groups: {
+    id: string;
+    name: string;
+    teacher_name: string;
+  }[];
+  assignments: {
+    pending: { id: string; title: string; deadline: string; group_name: string }[];
+    submitted: { id: string; title: string; deadline: string; group_name: string }[];
+    completed: { id: string; title: string; deadline: string; group_name: string; score: number }[];
+  };
+  library: {
+    id: string;
+    title: string;
+    subject: string;
+    teacher_name: string;
+  }[];
   leaderboard: {
     student_id: string;
     full_name: string;
     average_score: number;
     is_me: boolean;
   }[];
+  my_rank: number;
+  rank_change: number;
 }
 
 export interface TeacherAnalyticsData {

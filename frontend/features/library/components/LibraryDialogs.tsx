@@ -47,7 +47,8 @@ export function UploadBookDialog({ isOpen, onClose }: { isOpen: boolean; onClose
     const formData = new FormData();
     formData.append("title", data.title);
     if (data.subject) formData.append("subject", data.subject);
-    formData.append("pdf_file", data.pdf_file[0]);
+    const fileList = data.file as any;
+    formData.append("file", fileList instanceof File ? fileList : fileList[0]);
 
     uploadMutation.mutate(formData, {
       onSuccess: () => onClose(),
@@ -70,9 +71,9 @@ export function UploadBookDialog({ isOpen, onClose }: { isOpen: boolean; onClose
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">PDF Fayl</label>
-          <Input type="file" accept=".pdf" {...register("pdf_file")} className={errors.pdf_file ? "border-destructive" : ""} />
-          {errors.pdf_file && <p className="text-xs text-destructive">{errors.pdf_file.message as string}</p>}
+          <label className="text-sm font-medium">Fayl (PDF, DOCX, JPG va boshqalar)</label>
+          <Input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" {...register("file")} className={errors.file ? "border-destructive" : ""} />
+          {errors.file && <p className="text-xs text-destructive">{errors.file.message as string}</p>}
         </div>
 
         <div className="pt-3 flex gap-3 border-t mt-4">
